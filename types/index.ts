@@ -14,6 +14,7 @@ export type GodspeedChunk = {
   doc_date: string;
   content: string;
   content_tokens: number;
+  content_length: number;
   embedding: number[];
 };
 

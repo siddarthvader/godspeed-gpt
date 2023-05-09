@@ -2,10 +2,16 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import { encode } from "gpt-3-encoder";
 import { xml2json } from "./util.js";
-import { GodspeedDoc, GodspeedJSON, SiteMap } from "../types/index.jsx";
+import {
+  GodspeedChunk,
+  GodspeedDoc,
+  GodspeedJSON,
+  SiteMap,
+} from "../types/index.jsx";
 import * as fs from "fs";
 
 const BASE_URL = "https://docs.godspeed.systems/sitemap.xml";
+const CHUNK_SIZE = 200;
 
 const getSitemap = async () => {
   return await axios
@@ -54,17 +60,87 @@ const getPage = async (url: string): Promise<GodspeedDoc> => {
   };
 };
 
+const chunkEssay = async (doc: GodspeedDoc) => {
+  const { title, url, date, content, ...chunklessSection } = doc;
+
+  let docTextChunks = [];
+
+  if (encode(content).length > CHUNK_SIZE) {
+    const split = content.split(". ");
+    let chunkText = "";
+
+    for (let i = 0; i < split.length; i++) {
+      const sentence = split[i];
+      const sentenceTokenLength = encode(sentence);
+      const chunkTextTokenLength = encode(chunkText).length;
+
+      if (chunkTextTokenLength + sentenceTokenLength.length > CHUNK_SIZE) {
+        docTextChunks.push(chunkText);
+        chunkText = "";
+      }
+
+      if (sentence[sentence.length - 1]?.match(/[a-z0-9]/i)) {
+        chunkText += sentence + ". ";
+      } else {
+        chunkText += sentence + " ";
+      }
+    }
+
+    docTextChunks.push(chunkText.trim());
+  } else {
+    docTextChunks.push(content.trim());
+  }
+
+  const docChunks = docTextChunks.map((text) => {
+    const trimmedText = text.trim();
+
+    const chunk: GodspeedChunk = {
+      doc_title: title,
+      doc_url: url,
+      doc_date: date,
+      content: trimmedText,
+      content_length: trimmedText.length,
+      content_tokens: encode(trimmedText).length,
+      embedding: [],
+    };
+
+    return chunk;
+  });
+
+  if (docChunks.length > 1) {
+    for (let i = 0; i < docChunks.length; i++) {
+      const chunk = docChunks[i];
+      const prevChunk = docChunks[i - 1];
+
+      if (chunk.content_tokens < 100 && prevChunk) {
+        prevChunk.content += " " + chunk.content;
+        prevChunk.content_length += chunk.content_length;
+        prevChunk.content_tokens += chunk.content_tokens;
+        docChunks.splice(i, 1);
+        i--;
+      }
+    }
+  }
+
+  const chunkedSection: GodspeedDoc = {
+    ...doc,
+    chunks: docChunks,
+  };
+
+  return chunkedSection;
+};
+
 (async () => {
   const sitemap: SiteMap[] = await getSitemap();
 
-  let docs: GodspeedDoc[] = [];
+  console.log("sitemap", sitemap);
+  let docs = [];
 
   for (let i = 0; i < sitemap.length; i++) {
     const doc = await getPage(sitemap[i].url);
-    docs.push(doc);
+    const chunkedDoc = await chunkEssay(doc);
+    docs.push(chunkedDoc);
   }
-
-  console.log(docs);
 
   const json: GodspeedJSON = {
     current_date: new Date().toISOString(),
