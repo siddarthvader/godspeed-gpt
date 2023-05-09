@@ -7,9 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "scrape": "tsc scripts/scrape.ts && node scripts/scrape.js"
+    "scrape": "tsc scripts/scrape.ts && node scripts/scrape.js",
+    "embed": "tsc scripts/embed.ts && node scripts/embed.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.21.0",
     "@types/node": "20.1.1",
     "@types/react": "18.2.6",
     "@types/react-dom": "18.2.4",
@@ -17,6 +19,7 @@
     "eslint": "8.40.0",
     "eslint-config-next": "13.4.1",
     "next": "13.4.1",
+    "openai": "^3.2.1",
     "postcss": "8.4.23",
     "react": "18.2.0",
     "react-dom": "18.2.0",
@@ -25,6 +28,7 @@
     "xml-js": "^1.6.11"
   },
   "devDependencies": {
+    "@next/env": "^13.4.1",
     "axios": "^1.4.0",
     "cheerio": "1.0.0-rc.12",
     "gpt-3-encoder": "^1.1.4"
