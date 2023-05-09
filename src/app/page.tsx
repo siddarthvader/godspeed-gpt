@@ -83,7 +83,7 @@ export default function Home() {
       >
         Submit
       </button>
-      <div className="p-2 mt-4 w-[60%]">{answer}</div>
+      <div className="p-2 mt-4 md:w-[60%] w-[90%]">{answer}</div>
     </div>
   );
 }
