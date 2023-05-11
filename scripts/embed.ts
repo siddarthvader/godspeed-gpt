@@ -19,6 +19,8 @@ const generateEmbedding = async (docs: GodspeedDoc[]) => {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
+  //   console.log(docs);
+
   for (let i = 0; i < docs.length; i++) {
     const section = docs[i];
 
@@ -40,6 +42,8 @@ const generateEmbedding = async (docs: GodspeedDoc[]) => {
       });
 
       const [{ embedding }] = embeddingResponse.data.data;
+
+      //   console.log({ embedding });
 
       const { data, error } = await supabase
         .from("godspeed_chunks")

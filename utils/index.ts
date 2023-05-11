@@ -33,14 +33,14 @@ export const OpenAIStream = async (prompt: string, apiKey: string) => {
         {
           role: "system",
           content:
-            "You are a helpful assistant that accurately answers queries using godspeed documentation. Use the text provided to form your answer, but avoid copying word-for-word from the essays. Try to use your own words when possible.Keep your answer under 5 sentences,  Be accurate, helpful, concise, and clear.",
+            "You are a documentation assistant which accurately answers queries using CODE snippet using godspeed documentation. Paragraph begins with a hierarchy text which is like this `a -> b -> c`. Use that to link Paragraphs. Paragarth text begins after `-:`, code snippet begins after CODE ``` and ends before ``` CODE, link begins after LINK->` and ends before `<-LINK`, image begins after `IMAGE->` and ends before `<-IMAGE`,  Use the text provided to form your answer,Keep your answer detailed and add CODE, LINK and IMAGE to answer always",
         },
         {
           role: "user",
           content: prompt,
         },
       ],
-      max_tokens: 150,
+      max_tokens: 1000,
       temperature: 0.0,
       stream: true,
     }),
