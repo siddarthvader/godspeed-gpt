@@ -36,13 +36,13 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var JSONLoader = require("langchain/document_loaders/fs/json").JSONLoader;
-var OpenAIEmbeddings = require("langchain/embeddings").OpenAIEmbeddings;
-var RecursiveCharacterTextSplitter = require("langchain/text_splitter").RecursiveCharacterTextSplitter;
-var SupabaseVectorStore = require("langchain/vectorstores/supabase").SupabaseVectorStore;
 var env_1 = require("@next/env");
 (0, env_1.loadEnvConfig)("");
 var config_1 = require("../config");
+var json_1 = require("langchain/document_loaders/fs/json");
+var text_splitter_1 = require("langchain/text_splitter");
+var openai_1 = require("langchain/embeddings/openai");
+var supabase_1 = require("langchain/vectorstores/supabase");
 var privateKey = process.env.SUPABASE_PRIVATE_KEY;
 if (!privateKey)
     throw new Error("Expected env var SUPABASE_PRIVATE_KEY");
@@ -55,9 +55,9 @@ if (!url)
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                loaderContent = new JSONLoader("scripts/gs.json", ["/content"]);
-                laoderURL = new JSONLoader("scripts/gs.json", ["/url"]);
-                loaderTitle = new JSONLoader("scripts/gs.json", ["/title"]);
+                loaderContent = new json_1.JSONLoader("scripts/gs.json", ["/content"]);
+                laoderURL = new json_1.JSONLoader("scripts/gs.json", ["/url"]);
+                loaderTitle = new json_1.JSONLoader("scripts/gs.json", ["/title"]);
                 return [4 /*yield*/, loaderContent.load()];
             case 1:
                 docs = _a.sent();
@@ -73,15 +73,15 @@ if (!url)
                     return doc;
                 });
                 console.log(docs);
-                textSplitter = new RecursiveCharacterTextSplitter({
-                    chunkSize: 1000,
+                textSplitter = new text_splitter_1.RecursiveCharacterTextSplitter({
+                    chunkSize: 500,
                     chunkOverlap: 200,
                 });
                 return [4 /*yield*/, textSplitter.splitDocuments(docs)];
             case 4:
                 chunkedDocs = _a.sent();
-                embeddings = new OpenAIEmbeddings();
-                SupabaseVectorStore.fromDocuments(chunkedDocs, embeddings, config_1.dbConfig);
+                embeddings = new openai_1.OpenAIEmbeddings();
+                supabase_1.SupabaseVectorStore.fromDocuments(chunkedDocs, embeddings, config_1.dbConfig);
                 return [2 /*return*/];
         }
     });

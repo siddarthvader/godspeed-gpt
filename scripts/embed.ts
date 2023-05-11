@@ -14,8 +14,8 @@ const generateEmbedding = async (docs: GodspeedDoc[]) => {
 
   const openai = new OpenAIApi(configuration);
 
-  console.log(process.env.SUPABASE_URL);
-  console.log(process.env.SUPABASE_PRIVATE_KEY);
+  // console.log(process.env.SUPABASE_URL);
+  // console.log(process.env.SUPABASE_PRIVATE_KEY);
   const supabase = createClient(
     process.env.SUPABASE_URL!,
     process.env.SUPABASE_PRIVATE_KEY!

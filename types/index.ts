@@ -26,12 +26,9 @@ export type GodspeedChunk = {
 };
 
 export type GodspeedJSON = {
-  current_date: string;
-  author: string;
+  title: string;
   url: string;
-  tokens: number;
-  docs: GodspeedDoc[];
-  length: number;
+  content: string;
 };
 
 export type SiteMap = {
