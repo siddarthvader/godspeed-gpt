@@ -33,7 +33,7 @@ export const OpenAIStream = async (prompt: string, apiKey: string) => {
         {
           role: "system",
           content:
-            "You are a helpful assistant that accurately answers queries using godspeed documentation. Use the text provided to form your answer, but avoid copying word-for-word from the essays. Try to use your own words when possible.Keep your answer under 5 sentences,  Be accurate, helpful, concise, and clear.",
+            "You are a helpful assistant that accurately answers queries using godspeed documentation. Use the text provided to form your answer, but avoid copying word-for-word from the essays. Try to use your own words when possible.Keep your answer short and add code snippets. Be accurate, helpful, concise, and clear and answer strictly in the format mentioned by user.",
         },
         {
           role: "user",

@@ -11,7 +11,7 @@ export default function Home() {
   const [chunks, setChunks] = useState<GodspeedChunk[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const handleAnser = async () => {
+  const handleAnswer = async () => {
     setAnswer("");
     const searchResponse = await fetch("/api/search", {
       method: "POST",
@@ -28,7 +28,7 @@ export default function Home() {
     console.log(searchResult);
 
     const prompt = endent`
-      use the following passages to anser the query: ${query}
+      use the following passages to answer the query: ${query}
 
       ${searchResult
         .slice(0, 10)
@@ -79,11 +79,13 @@ export default function Home() {
       />
       <button
         className="p-2 mt-4 text-white rounded-md bg-zinc-500"
-        onClick={handleAnser}
+        onClick={handleAnswer}
       >
         Submit
       </button>
-      <div className="p-2 mt-4 md:w-[60%] w-[90%]">{answer}</div>
+      <div className="p-2 mt-4 md:w-[60%] w-[90%]">
+        <code>{answer}</code>
+      </div>
     </div>
   );
 }

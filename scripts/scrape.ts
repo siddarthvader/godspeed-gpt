@@ -11,7 +11,7 @@ import {
 import * as fs from "fs";
 
 const BASE_URL = "https://docs.godspeed.systems/sitemap.xml";
-const CHUNK_SIZE = 200;
+const CHUNK_SIZE = 500;
 
 const getSitemap = async () => {
   return await axios
