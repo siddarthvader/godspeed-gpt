@@ -33,34 +33,85 @@ const getSitemap = async () => {
     });
 };
 
-const getPage = async (url: string): Promise<GodspeedDoc> => {
+const getPage = async (url: string): Promise<GodspeedDoc[]> => {
   const html = await axios.get(url);
   const $ = cheerio.load(html.data);
-
-  const title = $("title").text();
+  const data: GodspeedDoc[] = [];
 
   $("*").each(function () {
     if ($(this).is(":not(:empty)")) {
       $(this).before(" ");
       $(this).after(" ");
     }
+
+    if ($(this).is("code")) {
+      // Add CODE text to code element;s start and finish
+      $(this).before("CODE-> ");
+      $(this).after(" <-CODE");
+    }
+
+    if ($(this).not("h1 a, h2 a, h3 a").is("a")) {
+      $(this).before("LINK-> ");
+      // console.log($(this).attr("href"));
+      $(this).after(" " + $(this).attr("href")!, " <-LINK");
+    }
+
+    if ($(this).is("img")) {
+      $(this).before("IMAGE-> ");
+      $(this).after($(this).attr("src")!, " <-IMAGE");
+    }
   });
 
-  // Extract the text content from the HTML while preserving the whitespace between different elements
-  const text = $("article").text().replace(/\s+/g, " ").trim();
+  const pageUrl = url;
+  const docTitle = $("h1").text();
 
-  return {
-    title,
-    url,
-    date: new Date().toISOString(),
-    content: text,
-    tokens: encode(text).length,
-    length: text.length,
-    chunks: [],
-  };
+  // Traverse all h2 and h3 elements
+  $("h1, h2, h3").each((i, el) => {
+    // Get title text and URL from child a element
+    let title = $(el).text().trim();
+    let sectionTitle = "";
+    if (el.name === "h3") {
+      // console.log($(el).prevUntil("h2").filter("h2").text());
+      sectionTitle = $(el).prevAll("h2").first().text();
+    }
+
+    // console.log({ sectionTitle });
+    let url = pageUrl;
+    if (el.name != "h1") {
+      url += $(el).find("a").attr("href") ?? "";
+    }
+
+    console.log({ url });
+
+    // Get content from next element that's not an h1, h2, or h3
+    const contentEl = $(el).nextUntil("h1, h2, h3").filter(":not(h1, h2, h3)");
+
+    const content = (
+      docTitle +
+      "-> " +
+      sectionTitle +
+      "-> " +
+      title +
+      "-: " +
+      contentEl.text()
+    ).trim();
+
+    // Add title, content, and URL to data array
+    data.push({
+      title,
+      content,
+      url: url!,
+      date: new Date().toISOString(),
+      tokens: encode(content).length,
+      length: content.length,
+      chunks: [],
+    });
+  });
+
+  return data;
 };
 
-const chunkEssay = async (doc: GodspeedDoc) => {
+const chunkPage = (doc: GodspeedDoc) => {
   const { title, url, date, content, ...chunklessSection } = doc;
 
   let docTextChunks = [];
@@ -133,22 +184,34 @@ const chunkEssay = async (doc: GodspeedDoc) => {
 (async () => {
   const sitemap: SiteMap[] = await getSitemap();
 
-  console.log("sitemap", sitemap);
+  // console.log("sitemap", sitemap);
   let docs = [];
 
   for (let i = 0; i < sitemap.length; i++) {
     const doc = await getPage(sitemap[i].url);
-    const chunkedDoc = await chunkEssay(doc);
-    docs.push(chunkedDoc);
+
+    docs.push(doc);
   }
+
+  const flatDoc = docs.flat().map((doc) => {
+    const chunkedDoc = chunkPage(doc);
+
+    // console.log({ chunkedDoc });
+    return {
+      ...doc,
+      ...chunkedDoc,
+    };
+  });
+
+  // console.log(flatDoc);
 
   const json: GodspeedJSON = {
     current_date: new Date().toISOString(),
     author: "sid",
     url: "https://docs.godspeed.systems/sitemap.xml",
-    tokens: docs.reduce((acc, doc) => acc + doc.tokens, 0),
-    length: docs.reduce((acc, doc) => acc + doc.length, 0),
-    docs,
+    tokens: flatDoc.reduce((acc, doc) => acc + doc.tokens, 0),
+    length: flatDoc.reduce((acc, doc) => acc + doc.length, 0),
+    docs: flatDoc,
   };
 
   fs.writeFileSync("scripts/gs.json", JSON.stringify(json));

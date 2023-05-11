@@ -64,7 +64,7 @@ var gpt_3_encoder_1 = require("gpt-3-encoder");
 var util_js_1 = require("./util.js");
 var fs = require("fs");
 var BASE_URL = "https://docs.godspeed.systems/sitemap.xml";
-var CHUNK_SIZE = 200;
+var CHUNK_SIZE = 500;
 var getSitemap = function () { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -87,124 +87,165 @@ var getSitemap = function () { return __awaiter(void 0, void 0, void 0, function
     });
 }); };
 var getPage = function (url) { return __awaiter(void 0, void 0, void 0, function () {
-    var html, $, title, text;
+    var html, $, data, pageUrl, docTitle;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0: return [4 /*yield*/, axios_1.default.get(url)];
             case 1:
                 html = _a.sent();
                 $ = cheerio.load(html.data);
-                title = $("title").text();
+                data = [];
                 $("*").each(function () {
                     if ($(this).is(":not(:empty)")) {
                         $(this).before(" ");
                         $(this).after(" ");
                     }
+                    if ($(this).is("code")) {
+                        // Add CODE text to code element;s start and finish
+                        $(this).before("CODE-> ");
+                        $(this).after(" <-CODE");
+                    }
+                    if ($(this).not("h1 a, h2 a, h3 a").is("a")) {
+                        $(this).before("LINK-> ");
+                        // console.log($(this).attr("href"));
+                        $(this).after(" " + $(this).attr("href"), " <-LINK");
+                    }
+                    if ($(this).is("img")) {
+                        $(this).before("IMAGE-> ");
+                        $(this).after($(this).attr("src"), " <-IMAGE");
+                    }
                 });
-                text = $("article").text().replace(/\s+/g, " ").trim();
-                return [2 /*return*/, {
+                pageUrl = url;
+                docTitle = $("h1").text();
+                // Traverse all h2 and h3 elements
+                $("h1, h2, h3").each(function (i, el) {
+                    var _a;
+                    // Get title text and URL from child a element
+                    var title = $(el).text().trim();
+                    var sectionTitle = "";
+                    if (el.name === "h3") {
+                        // console.log($(el).prevUntil("h2").filter("h2").text());
+                        sectionTitle = $(el).prevAll("h2").first().text();
+                    }
+                    // console.log({ sectionTitle });
+                    var url = pageUrl;
+                    if (el.name != "h1") {
+                        url += (_a = $(el).find("a").attr("href")) !== null && _a !== void 0 ? _a : "";
+                    }
+                    console.log({ url: url });
+                    // Get content from next element that's not an h1, h2, or h3
+                    var contentEl = $(el).nextUntil("h1, h2, h3").filter(":not(h1, h2, h3)");
+                    var content = (docTitle +
+                        "-> " +
+                        sectionTitle +
+                        "-> " +
+                        title +
+                        "-: " +
+                        contentEl.text()).trim();
+                    // Add title, content, and URL to data array
+                    data.push({
                         title: title,
+                        content: content,
                         url: url,
                         date: new Date().toISOString(),
-                        content: text,
-                        tokens: (0, gpt_3_encoder_1.encode)(text).length,
-                        length: text.length,
+                        tokens: (0, gpt_3_encoder_1.encode)(content).length,
+                        length: content.length,
                         chunks: [],
-                    }];
+                    });
+                });
+                return [2 /*return*/, data];
         }
     });
 }); };
-var chunkEssay = function (doc) { return __awaiter(void 0, void 0, void 0, function () {
-    var title, url, date, content, chunklessSection, docTextChunks, split, chunkText, i, sentence, sentenceTokenLength, chunkTextTokenLength, docChunks, i, chunk, prevChunk, chunkedSection;
+var chunkPage = function (doc) {
     var _a;
-    return __generator(this, function (_b) {
-        title = doc.title, url = doc.url, date = doc.date, content = doc.content, chunklessSection = __rest(doc, ["title", "url", "date", "content"]);
-        docTextChunks = [];
-        if ((0, gpt_3_encoder_1.encode)(content).length > CHUNK_SIZE) {
-            split = content.split(". ");
-            chunkText = "";
-            for (i = 0; i < split.length; i++) {
-                sentence = split[i];
-                sentenceTokenLength = (0, gpt_3_encoder_1.encode)(sentence);
-                chunkTextTokenLength = (0, gpt_3_encoder_1.encode)(chunkText).length;
-                if (chunkTextTokenLength + sentenceTokenLength.length > CHUNK_SIZE) {
-                    docTextChunks.push(chunkText);
-                    chunkText = "";
-                }
-                if ((_a = sentence[sentence.length - 1]) === null || _a === void 0 ? void 0 : _a.match(/[a-z0-9]/i)) {
-                    chunkText += sentence + ". ";
-                }
-                else {
-                    chunkText += sentence + " ";
-                }
+    var title = doc.title, url = doc.url, date = doc.date, content = doc.content, chunklessSection = __rest(doc, ["title", "url", "date", "content"]);
+    var docTextChunks = [];
+    if ((0, gpt_3_encoder_1.encode)(content).length > CHUNK_SIZE) {
+        var split = content.split(". ");
+        var chunkText = "";
+        for (var i = 0; i < split.length; i++) {
+            var sentence = split[i];
+            var sentenceTokenLength = (0, gpt_3_encoder_1.encode)(sentence);
+            var chunkTextTokenLength = (0, gpt_3_encoder_1.encode)(chunkText).length;
+            if (chunkTextTokenLength + sentenceTokenLength.length > CHUNK_SIZE) {
+                docTextChunks.push(chunkText);
+                chunkText = "";
             }
-            docTextChunks.push(chunkText.trim());
-        }
-        else {
-            docTextChunks.push(content.trim());
-        }
-        docChunks = docTextChunks.map(function (text) {
-            var trimmedText = text.trim();
-            var chunk = {
-                doc_title: title,
-                doc_url: url,
-                doc_date: date,
-                content: trimmedText,
-                content_length: trimmedText.length,
-                content_tokens: (0, gpt_3_encoder_1.encode)(trimmedText).length,
-                embedding: [],
-            };
-            return chunk;
-        });
-        if (docChunks.length > 1) {
-            for (i = 0; i < docChunks.length; i++) {
-                chunk = docChunks[i];
-                prevChunk = docChunks[i - 1];
-                if (chunk.content_tokens < 100 && prevChunk) {
-                    prevChunk.content += " " + chunk.content;
-                    prevChunk.content_length += chunk.content_length;
-                    prevChunk.content_tokens += chunk.content_tokens;
-                    docChunks.splice(i, 1);
-                    i--;
-                }
+            if ((_a = sentence[sentence.length - 1]) === null || _a === void 0 ? void 0 : _a.match(/[a-z0-9]/i)) {
+                chunkText += sentence + ". ";
+            }
+            else {
+                chunkText += sentence + " ";
             }
         }
-        chunkedSection = __assign(__assign({}, doc), { chunks: docChunks });
-        return [2 /*return*/, chunkedSection];
+        docTextChunks.push(chunkText.trim());
+    }
+    else {
+        docTextChunks.push(content.trim());
+    }
+    var docChunks = docTextChunks.map(function (text) {
+        var trimmedText = text.trim();
+        var chunk = {
+            doc_title: title,
+            doc_url: url,
+            doc_date: date,
+            content: trimmedText,
+            content_length: trimmedText.length,
+            content_tokens: (0, gpt_3_encoder_1.encode)(trimmedText).length,
+            embedding: [],
+        };
+        return chunk;
     });
-}); };
+    if (docChunks.length > 1) {
+        for (var i = 0; i < docChunks.length; i++) {
+            var chunk = docChunks[i];
+            var prevChunk = docChunks[i - 1];
+            if (chunk.content_tokens < 100 && prevChunk) {
+                prevChunk.content += " " + chunk.content;
+                prevChunk.content_length += chunk.content_length;
+                prevChunk.content_tokens += chunk.content_tokens;
+                docChunks.splice(i, 1);
+                i--;
+            }
+        }
+    }
+    var chunkedSection = __assign(__assign({}, doc), { chunks: docChunks });
+    return chunkedSection;
+};
 (function () { return __awaiter(void 0, void 0, void 0, function () {
-    var sitemap, docs, i, doc, chunkedDoc, json;
+    var sitemap, docs, i, doc, flatDoc, json;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0: return [4 /*yield*/, getSitemap()];
             case 1:
                 sitemap = _a.sent();
-                console.log("sitemap", sitemap);
                 docs = [];
                 i = 0;
                 _a.label = 2;
             case 2:
-                if (!(i < sitemap.length)) return [3 /*break*/, 6];
+                if (!(i < sitemap.length)) return [3 /*break*/, 5];
                 return [4 /*yield*/, getPage(sitemap[i].url)];
             case 3:
                 doc = _a.sent();
-                return [4 /*yield*/, chunkEssay(doc)];
+                docs.push(doc);
+                _a.label = 4;
             case 4:
-                chunkedDoc = _a.sent();
-                docs.push(chunkedDoc);
-                _a.label = 5;
-            case 5:
                 i++;
                 return [3 /*break*/, 2];
-            case 6:
+            case 5:
+                flatDoc = docs.flat().map(function (doc) {
+                    var chunkedDoc = chunkPage(doc);
+                    // console.log({ chunkedDoc });
+                    return __assign(__assign({}, doc), chunkedDoc);
+                });
                 json = {
                     current_date: new Date().toISOString(),
                     author: "sid",
                     url: "https://docs.godspeed.systems/sitemap.xml",
-                    tokens: docs.reduce(function (acc, doc) { return acc + doc.tokens; }, 0),
-                    length: docs.reduce(function (acc, doc) { return acc + doc.length; }, 0),
-                    docs: docs,
+                    tokens: flatDoc.reduce(function (acc, doc) { return acc + doc.tokens; }, 0),
+                    length: flatDoc.reduce(function (acc, doc) { return acc + doc.length; }, 0),
+                    docs: flatDoc,
                 };
                 fs.writeFileSync("scripts/gs.json", JSON.stringify(json));
                 return [2 /*return*/];
