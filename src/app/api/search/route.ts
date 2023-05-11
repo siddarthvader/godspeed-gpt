@@ -9,6 +9,8 @@ export async function POST(req: Request): Promise<Response> {
       query: string;
     };
 
+    console.log(query);
+
     const apiKey = process.env.OPEN_API_KEY!;
 
     const res = await fetch("https://api.openai.com/v1/embeddings", {
@@ -31,7 +33,7 @@ export async function POST(req: Request): Promise<Response> {
     // console.log({ embedding });
 
     const { data: chunks, error } = await supabaseAdmin.rpc("godspeed_search", {
-      match_count: 5,
+      match_count: 10,
       query_embedding: embedding,
       similarity_threshold: 0.8,
     });
