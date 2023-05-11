@@ -132,7 +132,7 @@ var getPage = function (url) { return __awaiter(void 0, void 0, void 0, function
                     if (el.name != "h1") {
                         url += (_a = $(el).find("a").attr("href")) !== null && _a !== void 0 ? _a : "";
                     }
-                    console.log({ url: url });
+                    // console.log({ url });
                     // Get content from next element that's not an h1, h2, or h3
                     var contentEl = $(el).nextUntil("h1, h2, h3").filter(":not(h1, h2, h3)");
                     var content = (docTitle +
@@ -214,7 +214,7 @@ var chunkPage = function (doc) {
     return chunkedSection;
 };
 (function () { return __awaiter(void 0, void 0, void 0, function () {
-    var sitemap, docs, i, doc, flatDoc, json;
+    var sitemap, docs, i, doc, flatDoc;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0: return [4 /*yield*/, getSitemap()];
@@ -235,19 +235,22 @@ var chunkPage = function (doc) {
                 return [3 /*break*/, 2];
             case 5:
                 flatDoc = docs.flat().map(function (doc) {
-                    var chunkedDoc = chunkPage(doc);
-                    // console.log({ chunkedDoc });
-                    return __assign(__assign({}, doc), chunkedDoc);
+                    // console.log(doc);
+                    return {
+                        url: doc.url,
+                        content: doc.content,
+                    };
                 });
-                json = {
-                    current_date: new Date().toISOString(),
-                    author: "sid",
-                    url: "https://docs.godspeed.systems/sitemap.xml",
-                    tokens: flatDoc.reduce(function (acc, doc) { return acc + doc.tokens; }, 0),
-                    length: flatDoc.reduce(function (acc, doc) { return acc + doc.length; }, 0),
-                    docs: flatDoc,
-                };
-                fs.writeFileSync("scripts/gs.json", JSON.stringify(json));
+                console.log(flatDoc);
+                // const json: GodspeedJSON = {
+                //   current_date: new Date().toISOString(),
+                //   author: "sid",
+                //   url: "https://docs.godspeed.systems/sitemap.xml",
+                //   tokens: flatDoc.reduce((acc, doc) => acc + doc.tokens, 0),
+                //   length: flatDoc.reduce((acc, doc) => acc + doc.length, 0),
+                //   docs: flatDoc,
+                // };
+                fs.writeFileSync("scripts/gs.json", JSON.stringify(flatDoc));
                 return [2 /*return*/];
         }
     });

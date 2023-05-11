@@ -10,6 +10,7 @@ export type GodspeedDoc = {
   tokens: number;
   length: number;
   chunks: GodspeedChunk[];
+  metadata?: {};
 };
 
 export type GodspeedChunk = {
