@@ -136,11 +136,11 @@ export default function Home() {
   }
 
   function generateCodeBlock(content: string) {
-    return `<pre class="flex flex-col mt-4 font-mono leading-none bg-zinc-800">
+    return `<pre class="flex flex-col mt-4 font-sans text-sm leading-none bg-zinc-800">
         <div 
-          class="copy-code p-2 text-sm font-thin text-right text-white cursor-pointer bg-zinc-600"
-        >Code</div>
-        <code class="w-full p-4 overflow-scroll text-white flex-1 leading-2">${content}</code>
+          class="copy-code p-2 text-sm font-semibold text-right text-white cursor-pointer bg-zinc-600"
+        >Copy</div>
+        <code class="w-full p-4 overflow-scroll text-white flex-1 leading-2 font-mono">${content}</code>
       </pre>`;
   }
 
@@ -168,18 +168,15 @@ export default function Home() {
 
   useEffect(() => {
     textAreaRef.current?.focus();
-    messageListRef.current?.scrollTo(0, messageListRef.current.scrollHeight);
-  }, []);
+    messageListRef?.current?.scrollTo(0, messageListRef.current.scrollHeight);
+  }, [loading, query]);
 
   return (
     <div className="flex flex-col items-center justify-start h-full p-4 ">
       <div className="text-2xl font-semibold">Godspeed GPT</div>
       <hr className="w-full h-0.5 my-4 border-t-0 opacity-100 bg-red-400" />
 
-      <div
-        className="flex-1 border-b-2 border-zinc-300 w-[80%] h-full overflow-auto"
-        ref={messageListRef}
-      >
+      <div className="flex-1 w-[80%] h-full overflow-auto" ref={messageListRef}>
         {messages?.map((message, index) => (
           <div key={"message_container_" + index}>
             <div
@@ -207,7 +204,12 @@ export default function Home() {
                 )}
                 <pre
                   key={"pre_" + index}
-                  className="ml-2 font-mono whitespace-break-spaces"
+                  className={
+                    "ml-2 font-sans text-sm whitespace-break-spaces " +
+                    (message.type !== "apiMessage"
+                      ? "text-black"
+                      : "text-zinc-700")
+                  }
                   dangerouslySetInnerHTML={getAnswer(message.message)}
                 ></pre>
               </div>
@@ -240,7 +242,7 @@ export default function Home() {
       <div className="flex items-center space-x-2 w-[80%]">
         <input
           ref={textAreaRef}
-          className="p-2 mt-4 outline-none w-[90%] border-zinc-500 border-2"
+          className="p-2 mt-4 outline-none w-[90%] focus:border-red-500 border-2 border-zinc-300"
           type="text"
           placeholder="Ask a question about Godspeed"
           value={query}
