@@ -37,9 +37,21 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var JSONLoader = require("langchain/document_loaders/fs/json").JSONLoader;
-var fs = require("fs");
+var OpenAIEmbeddings = require("langchain/embeddings").OpenAIEmbeddings;
+var RecursiveCharacterTextSplitter = require("langchain/text_splitter").RecursiveCharacterTextSplitter;
+var SupabaseVectorStore = require("langchain/vectorstores/supabase").SupabaseVectorStore;
+var supabase_js_1 = require("@supabase/supabase-js");
+var env_1 = require("@next/env");
+(0, env_1.loadEnvConfig)("");
+var privateKey = process.env.SUPABASE_PRIVATE_KEY;
+if (!privateKey)
+    throw new Error("Expected env var SUPABASE_PRIVATE_KEY");
+var url = process.env.SUPABASE_URL;
+// console.log(url);
+if (!url)
+    throw new Error("Expected env var SUPABASE_URL");
 (function () { return __awaiter(void 0, void 0, void 0, function () {
-    var loaderContent, laoderURL, loaderTitle, docs, url, title;
+    var loaderContent, laoderURL, loaderTitle, docs, url, title, textSplitter, chunkedDocs, embeddings, client, dbConfig, vectorStore;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -56,12 +68,26 @@ var fs = require("fs");
             case 3:
                 title = _a.sent();
                 docs.map(function (doc, index) {
-                    doc.metadata.url = url[index].pageContent;
+                    doc.metadata.source = url[index].pageContent;
                     doc.metadata.title = title[index].pageContent;
                     return doc;
                 });
                 console.log(docs);
-                fs.writeFileSync("scripts/chunk.json", JSON.stringify(docs));
+                textSplitter = new RecursiveCharacterTextSplitter({
+                    chunkSize: 1000,
+                    chunkOverlap: 200,
+                });
+                return [4 /*yield*/, textSplitter.splitDocuments(docs)];
+            case 4:
+                chunkedDocs = _a.sent();
+                embeddings = new OpenAIEmbeddings();
+                client = (0, supabase_js_1.createClient)(process.env.SUPABASE_URL, process.env.SUPABASE_PRIVATE_KEY);
+                dbConfig = {
+                    client: client,
+                    tableName: "documents",
+                    embeddingColumnName: "embedding",
+                };
+                vectorStore = SupabaseVectorStore.fromDocuments(chunkedDocs, embeddings, dbConfig);
                 return [2 /*return*/];
         }
     });

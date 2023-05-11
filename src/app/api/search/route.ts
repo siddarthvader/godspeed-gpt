@@ -11,7 +11,7 @@ export async function POST(req: Request): Promise<Response> {
 
     console.log(query);
 
-    const apiKey = process.env.OPEN_API_KEY!;
+    const apiKey = process.env.OPENAI_API_KEY!;
 
     const res = await fetch("https://api.openai.com/v1/embeddings", {
       headers: {

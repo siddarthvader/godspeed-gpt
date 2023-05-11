@@ -1,6 +1,19 @@
 const { JSONLoader } = require("langchain/document_loaders/fs/json");
+const { OpenAIEmbeddings } = require("langchain/embeddings");
+const { RecursiveCharacterTextSplitter } = require("langchain/text_splitter");
+const { SupabaseVectorStore } = require("langchain/vectorstores/supabase");
+import { createClient } from "@supabase/supabase-js";
+import { loadEnvConfig } from "@next/env";
+loadEnvConfig("");
 
 import * as fs from "fs";
+const privateKey = process.env.SUPABASE_PRIVATE_KEY;
+if (!privateKey) throw new Error(`Expected env var SUPABASE_PRIVATE_KEY`);
+
+const url = process.env.SUPABASE_URL;
+
+// console.log(url);
+if (!url) throw new Error(`Expected env var SUPABASE_URL`);
 
 (async () => {
   //   const docs = new JSONLoader("gs.json");
@@ -19,10 +32,34 @@ import * as fs from "fs";
   const title = await loaderTitle.load();
 
   docs.map((doc, index) => {
-    doc.metadata.url = url[index].pageContent;
+    doc.metadata.source = url[index].pageContent;
     doc.metadata.title = title[index].pageContent;
     return doc;
   });
   console.log(docs);
-  fs.writeFileSync("scripts/chunk.json", JSON.stringify(docs));
+  //   fs.writeFileSync("scripts/chunk.json", JSON.stringify(docs));
+
+  const textSplitter = new RecursiveCharacterTextSplitter({
+    chunkSize: 1000,
+    chunkOverlap: 200,
+  });
+
+  const chunkedDocs = await textSplitter.splitDocuments(docs);
+
+  const embeddings = new OpenAIEmbeddings();
+
+  //   console.log(chunkedDocs);
+
+  const client = createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_PRIVATE_KEY!
+  );
+
+  const dbConfig = {
+    client,
+    tableName: "documents",
+    embeddingColumnName: "embedding",
+  };
+
+  SupabaseVectorStore.fromDocuments(chunkedDocs, embeddings, dbConfig);
 })();
