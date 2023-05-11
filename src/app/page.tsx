@@ -11,8 +11,6 @@ const codeRegex = /```([\s\S]+?)```/g;
 const linkRegex = /LINK->\s*(.*?)\s*<-LINK/g;
 const imageRegex = /IMAGE->\s*!\[(.*?)\]\((.*?)\)\s*<-IMAGE/g;
 
-
-
 export default function Home() {
   const [query, setQuery] = useState("");
   const [answer, setAnswer] = useState("");
@@ -26,7 +24,7 @@ export default function Home() {
 
   function copyFunction(copyText: string) {
     console.log("called...");
-  
+
     navigator.clipboard.writeText(copyText).then(
       function () {
         console.log("Async: Copying to clipboard was successful!");
@@ -155,7 +153,7 @@ export default function Home() {
         <div 
           class="copy-code p-2 text-sm font-thin text-right text-white cursor-pointer bg-zinc-600"
         >Code</div>
-        <code class="w-full p-4 overflow-scroll text-white flex-1">${content}</code>
+        <code class="w-full p-4 overflow-scroll text-white flex-1 leading-2">${content}</code>
       </pre>`;
   }
 
