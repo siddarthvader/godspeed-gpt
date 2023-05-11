@@ -168,8 +168,8 @@ export default function Home() {
 
   useEffect(() => {
     textAreaRef.current?.focus();
-    messageListRef.current?.scrollTo(0, messageListRef.current.scrollHeight);
-  }, []);
+    messageListRef?.current?.scrollTo(0, messageListRef.current.scrollHeight);
+  }, [loading, query]);
 
   return (
     <div className="flex flex-col items-center justify-start h-full p-4 ">
