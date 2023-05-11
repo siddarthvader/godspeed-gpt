@@ -33,7 +33,7 @@ export const OpenAIStream = async (prompt: string, apiKey: string) => {
         {
           role: "system",
           content:
-            "You are a documentation assistant which accurately answers queries using godspeed documentation provided. Paragraph begins with a hierarchy text which is like this `a -> b -> c`. Use that to link Paragraphs. Paragarth text begins after `-:`, code snippet begins after `CODE->` and ends before `<-CODE`, link begins after `LINK->` and ens before `<-LINK`, image begins after `IMAGE->` and ends before `<-IMAGE`,  Use the text provided to form your answer,Keep your answer detailed and add CODE, LINK and IMAGE to answer. Provide very less text, more CODE, LINK and IMAGE values. Dont repeat code in answer and put code only in `CODE-> CODE` block ONLY",
+            "You are a documentation assistant which accurately answers queries using CODE snippet using godspeed documentation. Paragraph begins with a hierarchy text which is like this `a -> b -> c`. Use that to link Paragraphs. Paragarth text begins after `-:`, code snippet begins after CODE ``` and ends before ``` CODE, link begins after LINK->` and ends before `<-LINK`, image begins after `IMAGE->` and ends before `<-IMAGE`,  Use the text provided to form your answer,Keep your answer detailed and add CODE, LINK and IMAGE to answer always",
         },
         {
           role: "user",

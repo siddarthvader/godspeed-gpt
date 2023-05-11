@@ -102,8 +102,8 @@ var getPage = function (url) { return __awaiter(void 0, void 0, void 0, function
                     }
                     if ($(this).is("code")) {
                         // Add CODE text to code element;s start and finish
-                        $(this).before("CODE-> ");
-                        $(this).after(" <-CODE");
+                        $(this).before("CODE ``` ");
+                        $(this).after(" ``` CODE");
                     }
                     if ($(this).not("h1 a, h2 a, h3 a").is("a")) {
                         $(this).before("LINK-> ");

@@ -46,8 +46,8 @@ const getPage = async (url: string): Promise<GodspeedDoc[]> => {
 
     if ($(this).is("code")) {
       // Add CODE text to code element;s start and finish
-      $(this).before("CODE-> ");
-      $(this).after(" <-CODE");
+      $(this).before("CODE ``` ");
+      $(this).after(" ``` CODE");
     }
 
     if ($(this).not("h1 a, h2 a, h3 a").is("a")) {
