@@ -64,7 +64,7 @@ var gpt_3_encoder_1 = require("gpt-3-encoder");
 var util_js_1 = require("./util.js");
 var fs = require("fs");
 var BASE_URL = "https://docs.godspeed.systems/sitemap.xml";
-var CHUNK_SIZE = 500;
+var CHUNK_SIZE = 200;
 var getSitemap = function () { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         switch (_a.label) {
