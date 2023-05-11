@@ -1,3 +1,5 @@
+import { Document } from "langchain/document";
+
 export enum OpenAIModel {
   DAVINCI_TURBO = "gpt-3.5-turbo",
 }
@@ -34,4 +36,11 @@ export type GodspeedJSON = {
 
 export type SiteMap = {
   url: string;
+};
+
+export type Message = {
+  type: "apiMessage" | "userMessage";
+  message: string;
+  isStreaming?: boolean;
+  sourceDocs?: Document[];
 };

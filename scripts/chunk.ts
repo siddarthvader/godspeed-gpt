@@ -2,11 +2,12 @@ const { JSONLoader } = require("langchain/document_loaders/fs/json");
 const { OpenAIEmbeddings } = require("langchain/embeddings");
 const { RecursiveCharacterTextSplitter } = require("langchain/text_splitter");
 const { SupabaseVectorStore } = require("langchain/vectorstores/supabase");
-import { createClient } from "@supabase/supabase-js";
+
 import { loadEnvConfig } from "@next/env";
 loadEnvConfig("");
 
 import * as fs from "fs";
+import { dbConfig } from "../config";
 const privateKey = process.env.SUPABASE_PRIVATE_KEY;
 if (!privateKey) throw new Error(`Expected env var SUPABASE_PRIVATE_KEY`);
 
@@ -47,19 +48,6 @@ if (!url) throw new Error(`Expected env var SUPABASE_URL`);
   const chunkedDocs = await textSplitter.splitDocuments(docs);
 
   const embeddings = new OpenAIEmbeddings();
-
-  //   console.log(chunkedDocs);
-
-  const client = createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_PRIVATE_KEY!
-  );
-
-  const dbConfig = {
-    client,
-    tableName: "documents",
-    embeddingColumnName: "embedding",
-  };
 
   SupabaseVectorStore.fromDocuments(chunkedDocs, embeddings, dbConfig);
 })();
