@@ -126,6 +126,7 @@ var getPage = function (url) { return __awaiter(void 0, void 0, void 0, function
                     if (el.name === "h3") {
                         // console.log($(el).prevUntil("h2").filter("h2").text());
                         sectionTitle = $(el).prevAll("h2").first().text();
+                        console.log({ sectionTitle: sectionTitle });
                     }
                     // console.log({ sectionTitle });
                     var url = pageUrl;
@@ -135,16 +136,10 @@ var getPage = function (url) { return __awaiter(void 0, void 0, void 0, function
                     // console.log({ url });
                     // Get content from next element that's not an h1, h2, or h3
                     var contentEl = $(el).nextUntil("h1, h2, h3").filter(":not(h1, h2, h3)");
-                    var content = (docTitle +
-                        "-> " +
-                        sectionTitle +
-                        "-> " +
-                        title +
-                        "-: " +
-                        contentEl.text()).trim();
+                    var content = contentEl.text().trim();
                     // Add title, content, and URL to data array
                     data.push({
-                        title: title,
+                        title: (docTitle + " " + sectionTitle + " " + title).trim(),
                         content: content,
                         url: url,
                         date: new Date().toISOString(),
@@ -239,6 +234,7 @@ var chunkPage = function (doc) {
                     return {
                         url: doc.url,
                         content: doc.content,
+                        title: doc.title,
                     };
                 });
                 console.log(flatDoc);

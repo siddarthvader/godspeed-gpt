@@ -73,6 +73,7 @@ const getPage = async (url: string): Promise<GodspeedDoc[]> => {
     if (el.name === "h3") {
       // console.log($(el).prevUntil("h2").filter("h2").text());
       sectionTitle = $(el).prevAll("h2").first().text();
+      console.log({ sectionTitle });
     }
 
     // console.log({ sectionTitle });
@@ -86,19 +87,11 @@ const getPage = async (url: string): Promise<GodspeedDoc[]> => {
     // Get content from next element that's not an h1, h2, or h3
     const contentEl = $(el).nextUntil("h1, h2, h3").filter(":not(h1, h2, h3)");
 
-    const content = (
-      docTitle +
-      "-> " +
-      sectionTitle +
-      "-> " +
-      title +
-      "-: " +
-      contentEl.text()
-    ).trim();
+    const content = contentEl.text().trim();
 
     // Add title, content, and URL to data array
     data.push({
-      title,
+      title: (docTitle + " " + sectionTitle + " " + title).trim(),
       content,
       url: url!,
       date: new Date().toISOString(),
@@ -208,6 +201,7 @@ const chunkPage = (doc: GodspeedDoc) => {
     return {
       url: doc.url,
       content: doc.content,
+      title: doc.title,
     };
   });
 

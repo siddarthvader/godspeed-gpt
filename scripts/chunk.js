@@ -39,20 +39,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var JSONLoader = require("langchain/document_loaders/fs/json").JSONLoader;
 var fs = require("fs");
 (function () { return __awaiter(void 0, void 0, void 0, function () {
-    var loaderContent, laoderURL, docs, url;
+    var loaderContent, laoderURL, loaderTitle, docs, url, title;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 loaderContent = new JSONLoader("scripts/gs.json", ["/content"]);
                 laoderURL = new JSONLoader("scripts/gs.json", ["/url"]);
+                loaderTitle = new JSONLoader("scripts/gs.json", ["/title"]);
                 return [4 /*yield*/, loaderContent.load()];
             case 1:
                 docs = _a.sent();
                 return [4 /*yield*/, laoderURL.load()];
             case 2:
                 url = _a.sent();
+                return [4 /*yield*/, loaderTitle.load()];
+            case 3:
+                title = _a.sent();
                 docs.map(function (doc, index) {
                     doc.metadata.url = url[index].pageContent;
+                    doc.metadata.title = title[index].pageContent;
                     return doc;
                 });
                 console.log(docs);

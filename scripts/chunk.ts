@@ -6,6 +6,7 @@ import * as fs from "fs";
   //   const docs = new JSONLoader("gs.json");
   const loaderContent = new JSONLoader("scripts/gs.json", ["/content"]);
   const laoderURL = new JSONLoader("scripts/gs.json", ["/url"]);
+  const loaderTitle = new JSONLoader("scripts/gs.json", ["/title"]);
 
   //   console.log(docs);
   //   return docs.map((doc) => {
@@ -15,9 +16,11 @@ import * as fs from "fs";
 
   const docs = await loaderContent.load();
   const url = await laoderURL.load();
+  const title = await loaderTitle.load();
 
   docs.map((doc, index) => {
     doc.metadata.url = url[index].pageContent;
+    doc.metadata.title = title[index].pageContent;
     return doc;
   });
   console.log(docs);
