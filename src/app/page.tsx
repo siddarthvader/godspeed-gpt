@@ -57,7 +57,7 @@ export default function Home() {
     setChunks(searchResult);
 
     const prompt = endent`
-      use the following passages to answer the query: ${query}
+      use the following passages and your own knowledge to answer the query: ${query}
 
       ${searchResult
         .slice(0, 10)
