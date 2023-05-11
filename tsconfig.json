@@ -29,7 +29,8 @@
     // these options are overrides used only by ts-node
     // same as the --compilerOptions flag and the TS_NODE_COMPILER_OPTIONS environment variable
     "compilerOptions": {
-      "module": "commonjs"
+      "target": "ES2020", // or higher
+      "module": "nodenext"
     }
   },
   "include": [
@@ -37,7 +38,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "scripts/scrape.ts"
+    "scripts/scrape.ts",
+    "scripts/chunk.ts"
   ],
   "exclude": ["node_modules"]
 }

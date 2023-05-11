@@ -1,15 +1,4 @@
 "use strict";
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -45,17 +34,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
-};
-var __rest = (this && this.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                t[p[i]] = s[p[i]];
-        }
-    return t;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var axios_1 = require("axios");
@@ -100,20 +78,20 @@ var getPage = function (url) { return __awaiter(void 0, void 0, void 0, function
                         $(this).before(" ");
                         $(this).after(" ");
                     }
-                    if ($(this).is("code")) {
-                        // Add CODE text to code element;s start and finish
-                        $(this).before("CODE ``` ");
-                        $(this).after(" ``` CODE");
-                    }
-                    if ($(this).not("h1 a, h2 a, h3 a").is("a")) {
-                        $(this).before("LINK-> ");
-                        // console.log($(this).attr("href"));
-                        $(this).after(" " + $(this).attr("href"), " <-LINK");
-                    }
-                    if ($(this).is("img")) {
-                        $(this).before("IMAGE-> ");
-                        $(this).after($(this).attr("src"), " <-IMAGE");
-                    }
+                    // if ($(this).is("code")) {
+                    //   // Add CODE text to code element;s start and finish
+                    //   $(this).before("CODE ``` ");
+                    //   $(this).after(" ``` CODE");
+                    // }
+                    // if ($(this).not("h1 a, h2 a, h3 a").is("a")) {
+                    //   $(this).before("LINK-> ");
+                    //   // console.log($(this).attr("href"));
+                    //   $(this).after(" " + $(this).attr("href")!, " <-LINK");
+                    // }
+                    // if ($(this).is("img")) {
+                    //   $(this).before("IMAGE-> ");
+                    //   $(this).after($(this).attr("src")!, " <-IMAGE");
+                    // }
                 });
                 pageUrl = url;
                 docTitle = $("h1").text();
@@ -126,25 +104,20 @@ var getPage = function (url) { return __awaiter(void 0, void 0, void 0, function
                     if (el.name === "h3") {
                         // console.log($(el).prevUntil("h2").filter("h2").text());
                         sectionTitle = $(el).prevAll("h2").first().text();
+                        console.log({ sectionTitle: sectionTitle });
                     }
                     // console.log({ sectionTitle });
                     var url = pageUrl;
                     if (el.name != "h1") {
                         url += (_a = $(el).find("a").attr("href")) !== null && _a !== void 0 ? _a : "";
                     }
-                    console.log({ url: url });
+                    // console.log({ url });
                     // Get content from next element that's not an h1, h2, or h3
                     var contentEl = $(el).nextUntil("h1, h2, h3").filter(":not(h1, h2, h3)");
-                    var content = (docTitle +
-                        "-> " +
-                        sectionTitle +
-                        "-> " +
-                        title +
-                        "-: " +
-                        contentEl.text()).trim();
+                    var content = contentEl.text().trim();
                     // Add title, content, and URL to data array
                     data.push({
-                        title: title,
+                        title: (docTitle + " " + sectionTitle + " " + title).trim(),
                         content: content,
                         url: url,
                         date: new Date().toISOString(),
@@ -157,64 +130,8 @@ var getPage = function (url) { return __awaiter(void 0, void 0, void 0, function
         }
     });
 }); };
-var chunkPage = function (doc) {
-    var _a;
-    var title = doc.title, url = doc.url, date = doc.date, content = doc.content, chunklessSection = __rest(doc, ["title", "url", "date", "content"]);
-    var docTextChunks = [];
-    if ((0, gpt_3_encoder_1.encode)(content).length > CHUNK_SIZE) {
-        var split = content.split(". ");
-        var chunkText = "";
-        for (var i = 0; i < split.length; i++) {
-            var sentence = split[i];
-            var sentenceTokenLength = (0, gpt_3_encoder_1.encode)(sentence);
-            var chunkTextTokenLength = (0, gpt_3_encoder_1.encode)(chunkText).length;
-            if (chunkTextTokenLength + sentenceTokenLength.length > CHUNK_SIZE) {
-                docTextChunks.push(chunkText);
-                chunkText = "";
-            }
-            if ((_a = sentence[sentence.length - 1]) === null || _a === void 0 ? void 0 : _a.match(/[a-z0-9]/i)) {
-                chunkText += sentence + ". ";
-            }
-            else {
-                chunkText += sentence + " ";
-            }
-        }
-        docTextChunks.push(chunkText.trim());
-    }
-    else {
-        docTextChunks.push(content.trim());
-    }
-    var docChunks = docTextChunks.map(function (text) {
-        var trimmedText = text.trim();
-        var chunk = {
-            doc_title: title,
-            doc_url: url,
-            doc_date: date,
-            content: trimmedText,
-            content_length: trimmedText.length,
-            content_tokens: (0, gpt_3_encoder_1.encode)(trimmedText).length,
-            embedding: [],
-        };
-        return chunk;
-    });
-    if (docChunks.length > 1) {
-        for (var i = 0; i < docChunks.length; i++) {
-            var chunk = docChunks[i];
-            var prevChunk = docChunks[i - 1];
-            if (chunk.content_tokens < 100 && prevChunk) {
-                prevChunk.content += " " + chunk.content;
-                prevChunk.content_length += chunk.content_length;
-                prevChunk.content_tokens += chunk.content_tokens;
-                docChunks.splice(i, 1);
-                i--;
-            }
-        }
-    }
-    var chunkedSection = __assign(__assign({}, doc), { chunks: docChunks });
-    return chunkedSection;
-};
 (function () { return __awaiter(void 0, void 0, void 0, function () {
-    var sitemap, docs, i, doc, flatDoc, json;
+    var sitemap, docs, i, doc, flatDoc;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0: return [4 /*yield*/, getSitemap()];
@@ -235,19 +152,23 @@ var chunkPage = function (doc) {
                 return [3 /*break*/, 2];
             case 5:
                 flatDoc = docs.flat().map(function (doc) {
-                    var chunkedDoc = chunkPage(doc);
-                    // console.log({ chunkedDoc });
-                    return __assign(__assign({}, doc), chunkedDoc);
+                    // console.log(doc);
+                    return {
+                        url: doc.url,
+                        content: doc.content,
+                        title: doc.title,
+                    };
                 });
-                json = {
-                    current_date: new Date().toISOString(),
-                    author: "sid",
-                    url: "https://docs.godspeed.systems/sitemap.xml",
-                    tokens: flatDoc.reduce(function (acc, doc) { return acc + doc.tokens; }, 0),
-                    length: flatDoc.reduce(function (acc, doc) { return acc + doc.length; }, 0),
-                    docs: flatDoc,
-                };
-                fs.writeFileSync("scripts/gs.json", JSON.stringify(json));
+                console.log(flatDoc);
+                // const json: GodspeedJSON = {
+                //   current_date: new Date().toISOString(),
+                //   author: "sid",
+                //   url: "https://docs.godspeed.systems/sitemap.xml",
+                //   tokens: flatDoc.reduce((acc, doc) => acc + doc.tokens, 0),
+                //   length: flatDoc.reduce((acc, doc) => acc + doc.length, 0),
+                //   docs: flatDoc,
+                // };
+                fs.writeFileSync("scripts/gs.json", JSON.stringify(flatDoc));
                 return [2 /*return*/];
         }
     });

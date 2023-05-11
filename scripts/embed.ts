@@ -8,15 +8,17 @@ import { createClient } from "@supabase/supabase-js";
 loadEnvConfig("");
 
 const generateEmbedding = async (docs: GodspeedDoc[]) => {
-  const configuration = new Configuration({ apiKey: process.env.OPEN_API_KEY });
+  const configuration = new Configuration({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
 
   const openai = new OpenAIApi(configuration);
 
-  console.log(process.env.NEXT_PUBLIC_SUPABASE_URL);
-  console.log(process.env.SUPABASE_SERVICE_ROLE_KEY);
+  // console.log(process.env.SUPABASE_URL);
+  // console.log(process.env.SUPABASE_PRIVATE_KEY);
   const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_PRIVATE_KEY!
   );
 
   //   console.log(docs);

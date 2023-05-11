@@ -13,8 +13,8 @@ const OpenAIModel = {
   DAVINCI_TURBO: "gpt-3.5-turbo",
 };
 export const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_PRIVATE_KEY!
 );
 
 export const OpenAIStream = async (prompt: string, apiKey: string) => {

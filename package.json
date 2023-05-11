@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "scrape": "tsc scripts/scrape.ts && node scripts/scrape.js",
-    "embed": "tsc scripts/embed.ts && node scripts/embed.js"
+    "embed": "tsc scripts/embed.ts && node scripts/embed.js",
+    "embed-langchain": "tsc scripts/chunk.ts && node scripts/chunk.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.21.0",
@@ -16,10 +17,13 @@
     "@types/react": "18.2.6",
     "@types/react-dom": "18.2.4",
     "autoprefixer": "10.4.14",
+    "chromadb": "^1.4.1",
+    "cohere-ai": "^6.2.0",
     "endent": "^2.1.0",
     "eslint": "8.40.0",
     "eslint-config-next": "13.4.1",
     "eventsource-parser": "^1.0.0",
+    "langchain": "^0.0.74",
     "next": "13.4.1",
     "openai": "^3.2.1",
     "postcss": "8.4.23",

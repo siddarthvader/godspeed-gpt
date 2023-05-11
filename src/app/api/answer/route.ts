@@ -9,7 +9,7 @@ export async function POST(req: Request): Promise<Response> {
       prompt: string;
     };
 
-    const apiKey = process.env.OPEN_API_KEY!;
+    const apiKey = process.env.OPENAI_API_KEY!;
 
     console.log({ apiKey });
 

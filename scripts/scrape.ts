@@ -2,12 +2,7 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import { encode } from "gpt-3-encoder";
 import { xml2json } from "./util.js";
-import {
-  GodspeedChunk,
-  GodspeedDoc,
-  GodspeedJSON,
-  SiteMap,
-} from "../types/index.jsx";
+import { GodspeedDoc, GodspeedJSON, SiteMap } from "../types/index.jsx";
 import * as fs from "fs";
 
 const BASE_URL = "https://docs.godspeed.systems/sitemap.xml";
@@ -44,22 +39,22 @@ const getPage = async (url: string): Promise<GodspeedDoc[]> => {
       $(this).after(" ");
     }
 
-    if ($(this).is("code")) {
-      // Add CODE text to code element;s start and finish
-      $(this).before("CODE ``` ");
-      $(this).after(" ``` CODE");
-    }
+    // if ($(this).is("code")) {
+    //   // Add CODE text to code element;s start and finish
+    //   $(this).before("CODE ``` ");
+    //   $(this).after(" ``` CODE");
+    // }
 
-    if ($(this).not("h1 a, h2 a, h3 a").is("a")) {
-      $(this).before("LINK-> ");
-      // console.log($(this).attr("href"));
-      $(this).after(" " + $(this).attr("href")!, " <-LINK");
-    }
+    // if ($(this).not("h1 a, h2 a, h3 a").is("a")) {
+    //   $(this).before("LINK-> ");
+    //   // console.log($(this).attr("href"));
+    //   $(this).after(" " + $(this).attr("href")!, " <-LINK");
+    // }
 
-    if ($(this).is("img")) {
-      $(this).before("IMAGE-> ");
-      $(this).after($(this).attr("src")!, " <-IMAGE");
-    }
+    // if ($(this).is("img")) {
+    //   $(this).before("IMAGE-> ");
+    //   $(this).after($(this).attr("src")!, " <-IMAGE");
+    // }
   });
 
   const pageUrl = url;
@@ -73,6 +68,7 @@ const getPage = async (url: string): Promise<GodspeedDoc[]> => {
     if (el.name === "h3") {
       // console.log($(el).prevUntil("h2").filter("h2").text());
       sectionTitle = $(el).prevAll("h2").first().text();
+      console.log({ sectionTitle });
     }
 
     // console.log({ sectionTitle });
@@ -81,24 +77,16 @@ const getPage = async (url: string): Promise<GodspeedDoc[]> => {
       url += $(el).find("a").attr("href") ?? "";
     }
 
-    console.log({ url });
+    // console.log({ url });
 
     // Get content from next element that's not an h1, h2, or h3
     const contentEl = $(el).nextUntil("h1, h2, h3").filter(":not(h1, h2, h3)");
 
-    const content = (
-      docTitle +
-      "-> " +
-      sectionTitle +
-      "-> " +
-      title +
-      "-: " +
-      contentEl.text()
-    ).trim();
+    const content = contentEl.text().trim();
 
     // Add title, content, and URL to data array
     data.push({
-      title,
+      title: (docTitle + " " + sectionTitle + " " + title).trim(),
       content,
       url: url!,
       date: new Date().toISOString(),
@@ -109,76 +97,6 @@ const getPage = async (url: string): Promise<GodspeedDoc[]> => {
   });
 
   return data;
-};
-
-const chunkPage = (doc: GodspeedDoc) => {
-  const { title, url, date, content, ...chunklessSection } = doc;
-
-  let docTextChunks = [];
-
-  if (encode(content).length > CHUNK_SIZE) {
-    const split = content.split(". ");
-    let chunkText = "";
-
-    for (let i = 0; i < split.length; i++) {
-      const sentence = split[i];
-      const sentenceTokenLength = encode(sentence);
-      const chunkTextTokenLength = encode(chunkText).length;
-
-      if (chunkTextTokenLength + sentenceTokenLength.length > CHUNK_SIZE) {
-        docTextChunks.push(chunkText);
-        chunkText = "";
-      }
-
-      if (sentence[sentence.length - 1]?.match(/[a-z0-9]/i)) {
-        chunkText += sentence + ". ";
-      } else {
-        chunkText += sentence + " ";
-      }
-    }
-
-    docTextChunks.push(chunkText.trim());
-  } else {
-    docTextChunks.push(content.trim());
-  }
-
-  const docChunks = docTextChunks.map((text) => {
-    const trimmedText = text.trim();
-
-    const chunk: GodspeedChunk = {
-      doc_title: title,
-      doc_url: url,
-      doc_date: date,
-      content: trimmedText,
-      content_length: trimmedText.length,
-      content_tokens: encode(trimmedText).length,
-      embedding: [],
-    };
-
-    return chunk;
-  });
-
-  if (docChunks.length > 1) {
-    for (let i = 0; i < docChunks.length; i++) {
-      const chunk = docChunks[i];
-      const prevChunk = docChunks[i - 1];
-
-      if (chunk.content_tokens < 100 && prevChunk) {
-        prevChunk.content += " " + chunk.content;
-        prevChunk.content_length += chunk.content_length;
-        prevChunk.content_tokens += chunk.content_tokens;
-        docChunks.splice(i, 1);
-        i--;
-      }
-    }
-  }
-
-  const chunkedSection: GodspeedDoc = {
-    ...doc,
-    chunks: docChunks,
-  };
-
-  return chunkedSection;
 };
 
 (async () => {
@@ -193,26 +111,25 @@ const chunkPage = (doc: GodspeedDoc) => {
     docs.push(doc);
   }
 
-  const flatDoc = docs.flat().map((doc) => {
-    const chunkedDoc = chunkPage(doc);
-
-    // console.log({ chunkedDoc });
+  const flatDoc: GodspeedJSON[] = docs.flat().map((doc) => {
+    // console.log(doc);
     return {
-      ...doc,
-      ...chunkedDoc,
+      url: doc.url,
+      content: doc.content,
+      title: doc.title,
     };
   });
 
-  // console.log(flatDoc);
+  console.log(flatDoc);
 
-  const json: GodspeedJSON = {
-    current_date: new Date().toISOString(),
-    author: "sid",
-    url: "https://docs.godspeed.systems/sitemap.xml",
-    tokens: flatDoc.reduce((acc, doc) => acc + doc.tokens, 0),
-    length: flatDoc.reduce((acc, doc) => acc + doc.length, 0),
-    docs: flatDoc,
-  };
+  // const json: GodspeedJSON = {
+  //   current_date: new Date().toISOString(),
+  //   author: "sid",
+  //   url: "https://docs.godspeed.systems/sitemap.xml",
+  //   tokens: flatDoc.reduce((acc, doc) => acc + doc.tokens, 0),
+  //   length: flatDoc.reduce((acc, doc) => acc + doc.length, 0),
+  //   docs: flatDoc,
+  // };
 
-  fs.writeFileSync("scripts/gs.json", JSON.stringify(json));
+  fs.writeFileSync("scripts/gs.json", JSON.stringify(flatDoc));
 })();
