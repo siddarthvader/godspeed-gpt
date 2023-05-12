@@ -10,12 +10,17 @@ export const makeChain = (vectorstore: SupabaseVectorStore) => {
     modelName: "gpt-3.5-turbo",
     maxTokens: 2000,
     openAIApiKey: process.env.OPENAI_API_KEY!,
-    presencePenalty: 1,
+    verbose: true,
   });
-  const qa_template = `You are a helpful assistant! You will answer all questions using context.
-  {context}
+  const qa_template = `You are a helpful AI assistant for GodSpeed! You will answer all questions using context. Dont use outside context knowledge, dont make up an answer/
+  Use only the evidence and state only the Facts.
+  Be as Detailed as possible.  If you are not sure, say "I don't know" or "I'm not sure".
+  Add code snippet in Code format in answer, but do not generate code snippet from your own knowledge, use ONLY code snippet available in context.
 
-  Add code snippet in Code format in answer, whenever possible.  Dont remove comments from code snippet, and show whole code snippet.
+  Search in Title first and then in Content. Title is more important than Content.
+ 
+  Context: {context}
+
   Question: {question}
   Helpful Answer:`;
 
@@ -27,7 +32,7 @@ export const makeChain = (vectorstore: SupabaseVectorStore) => {
 
   const chain = ConversationalRetrievalQAChain.fromLLM(
     model,
-    vectorstore.asRetriever(4),
+    vectorstore.asRetriever(10),
     {
       returnSourceDocuments: true,
       questionGeneratorTemplate: question_generator_template,

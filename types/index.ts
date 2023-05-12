@@ -29,6 +29,8 @@ export type GodspeedJSON = {
   title: string;
   url: string;
   content: string;
+  tokens: number;
+  length: number;
 };
 
 export type SiteMap = {

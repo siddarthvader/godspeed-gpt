@@ -111,10 +111,12 @@ var getPage = function (url) { return __awaiter(void 0, void 0, void 0, function
                     // console.log({ url });
                     // Get content from next element that's not an h1, h2, or h3
                     var contentEl = $(el).nextUntil("h1, h2, h3").filter(":not(h1, h2, h3)");
-                    var content = contentEl.text();
+                    var content = contentEl.text().trim();
                     // Add title, content, and URL to data array
                     data.push({
-                        title: (docTitle + " " + sectionTitle + " " + title).trim(),
+                        title: (docTitle.trim() + " " + sectionTitle.trim() + " " + title.trim())
+                            .trim()
+                            .replace(/:/g, ""),
                         content: content,
                         url: url,
                         date: new Date().toISOString(),
@@ -152,8 +154,13 @@ var getPage = function (url) { return __awaiter(void 0, void 0, void 0, function
                     // console.log(doc);
                     return {
                         url: doc.url,
-                        content: doc.title + " : " + doc.content,
-                        title: doc.title,
+                        content: (" Title: " +
+                            doc.title.trim() +
+                            ". Content: " +
+                            doc.content.trim()).trim(),
+                        title: doc.title.trim(),
+                        tokens: (0, gpt_3_encoder_1.encode)(doc.content).length,
+                        length: doc.content.length,
                     };
                 });
                 console.log(flatDoc);
