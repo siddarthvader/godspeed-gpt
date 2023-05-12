@@ -4,7 +4,6 @@ import { encode } from "gpt-3-encoder";
 import { xml2json } from "./util.js";
 import { GodspeedDoc, GodspeedJSON, SiteMap } from "../types/index.jsx";
 import * as fs from "fs";
-import { Artifika } from "next/font/google/index.js";
 
 const BASE_URL = "https://docs.godspeed.systems/sitemap.xml";
 const CHUNK_SIZE = 200;
@@ -100,11 +99,13 @@ const getPage = async (url: string): Promise<GodspeedDoc[]> => {
     // Get content from next element that's not an h1, h2, or h3
     const contentEl = $(el).nextUntil("h1, h2, h3").filter(":not(h1, h2, h3)");
 
-    const content = contentEl.text();
+    const content = contentEl.text().trim();
 
     // Add title, content, and URL to data array
     data.push({
-      title: (docTitle + " " + sectionTitle + " " + title).trim(),
+      title: (docTitle.trim() + " " + sectionTitle.trim() + " " + title.trim())
+        .trim()
+        .replace(/:/g, ""),
       content,
       url: url!,
       date: new Date().toISOString(),
@@ -133,8 +134,15 @@ const getPage = async (url: string): Promise<GodspeedDoc[]> => {
     // console.log(doc);
     return {
       url: doc.url,
-      content: doc.title + " : " + doc.content,
-      title: doc.title,
+      content: (
+        " Title: " +
+        doc.title.trim() +
+        ". Content: " +
+        doc.content.trim()
+      ).trim(),
+      title: doc.title.trim(),
+      tokens: encode(doc.content).length,
+      length: doc.content.length,
     };
   });
 

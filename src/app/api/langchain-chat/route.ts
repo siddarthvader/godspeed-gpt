@@ -31,9 +31,10 @@ export async function POST(req: Request): Promise<Response> {
     const chain = makeChain(vectorStore);
 
     //Ask a question using chat history
+    // Sending only last 10 answers as history.
     const response = await chain.call({
       question: sanitizedQuestion,
-      chat_history: history || [],
+      chat_history: history.slice(0, 10) || [],
     });
     //Ask a question using chat history
 

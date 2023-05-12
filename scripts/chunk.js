@@ -74,8 +74,8 @@ if (!url)
                 });
                 console.log(docs);
                 textSplitter = new RecursiveCharacterTextSplitter({
-                    chunkSize: 4000,
-                    chunkOverlap: 200,
+                    chunkSize: 2500,
+                    chunkOverlap: 500,
                 });
                 return [4 /*yield*/, textSplitter.splitDocuments(docs)];
             case 4:

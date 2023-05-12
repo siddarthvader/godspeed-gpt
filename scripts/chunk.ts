@@ -34,14 +34,15 @@ if (!url) throw new Error(`Expected env var SUPABASE_URL`);
   docs.map((doc, index) => {
     doc.metadata.source = url[index].pageContent;
     doc.metadata.title = title[index].pageContent;
+
     return doc;
   });
   console.log(docs);
   //   fs.writeFileSync("scripts/chunk.json", JSON.stringify(docs));
 
   const textSplitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 4000,
-    chunkOverlap: 200,
+    chunkSize: 2500,
+    chunkOverlap: 500,
   });
 
   const chunkedDocs = await textSplitter.splitDocuments(docs);
