@@ -65,6 +65,22 @@ var getSitemap = function () { return __awaiter(void 0, void 0, void 0, function
     });
 }); };
 var getPage = function (url) { return __awaiter(void 0, void 0, void 0, function () {
+    function traverseChildren($element) {
+        $element.contents().each(function () {
+            if (this.nodeType === 3) {
+                // check if node is a text node
+                $(this).after(" ");
+                $(this).before(" "); // add a space after text node
+            }
+            else if (this.nodeType === 1) {
+                // check if node is an element node
+                traverseChildren($(this)); // recursively call the function on child elements
+                $(this).after(" ");
+                $(this).before(" ");
+                // add a space after current element
+            }
+        });
+    }
     var html, $, data, pageUrl, docTitle;
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -73,26 +89,7 @@ var getPage = function (url) { return __awaiter(void 0, void 0, void 0, function
                 html = _a.sent();
                 $ = cheerio.load(html.data);
                 data = [];
-                $("*").each(function () {
-                    if ($(this).is(":not(:empty)")) {
-                        $(this).before(" ");
-                        $(this).after(" ");
-                    }
-                    // if ($(this).is("code")) {
-                    //   // Add CODE text to code element;s start and finish
-                    //   $(this).before("CODE ``` ");
-                    //   $(this).after(" ``` CODE");
-                    // }
-                    // if ($(this).not("h1 a, h2 a, h3 a").is("a")) {
-                    //   $(this).before("LINK-> ");
-                    //   // console.log($(this).attr("href"));
-                    //   $(this).after(" " + $(this).attr("href")!, " <-LINK");
-                    // }
-                    // if ($(this).is("img")) {
-                    //   $(this).before("IMAGE-> ");
-                    //   $(this).after($(this).attr("src")!, " <-IMAGE");
-                    // }
-                });
+                traverseChildren($("article"));
                 pageUrl = url;
                 docTitle = $("h1").text();
                 // Traverse all h2 and h3 elements
@@ -104,7 +101,7 @@ var getPage = function (url) { return __awaiter(void 0, void 0, void 0, function
                     if (el.name === "h3") {
                         // console.log($(el).prevUntil("h2").filter("h2").text());
                         sectionTitle = $(el).prevAll("h2").first().text();
-                        console.log({ sectionTitle: sectionTitle });
+                        // console.log({ sectionTitle });
                     }
                     // console.log({ sectionTitle });
                     var url = pageUrl;
@@ -114,7 +111,7 @@ var getPage = function (url) { return __awaiter(void 0, void 0, void 0, function
                     // console.log({ url });
                     // Get content from next element that's not an h1, h2, or h3
                     var contentEl = $(el).nextUntil("h1, h2, h3").filter(":not(h1, h2, h3)");
-                    var content = contentEl.text().trim();
+                    var content = contentEl.text();
                     // Add title, content, and URL to data array
                     data.push({
                         title: (docTitle + " " + sectionTitle + " " + title).trim(),
@@ -155,7 +152,7 @@ var getPage = function (url) { return __awaiter(void 0, void 0, void 0, function
                     // console.log(doc);
                     return {
                         url: doc.url,
-                        content: doc.content,
+                        content: doc.title + " : " + doc.content,
                         title: doc.title,
                     };
                 });

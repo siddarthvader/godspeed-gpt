@@ -19,6 +19,7 @@
     "autoprefixer": "10.4.14",
     "chromadb": "^1.4.1",
     "cohere-ai": "^6.2.0",
+    "encoding": "^0.1.13",
     "endent": "^2.1.0",
     "eslint": "8.40.0",
     "eslint-config-next": "13.4.1",

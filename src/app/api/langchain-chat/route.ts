@@ -40,7 +40,7 @@ export async function POST(req: Request): Promise<Response> {
     // console.log("response", response);
     return new Response(JSON.stringify(response), { status: 200 });
   } catch (error: any) {
-    // console.log("error", error);
+    console.log("error", error);
     return new Response("Error" + error, { status: 500 });
   }
 }

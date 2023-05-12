@@ -74,13 +74,15 @@ if (!url)
                 });
                 console.log(docs);
                 textSplitter = new RecursiveCharacterTextSplitter({
-                    chunkSize: 1000,
+                    chunkSize: 4000,
                     chunkOverlap: 200,
                 });
                 return [4 /*yield*/, textSplitter.splitDocuments(docs)];
             case 4:
                 chunkedDocs = _a.sent();
-                embeddings = new OpenAIEmbeddings();
+                embeddings = new OpenAIEmbeddings({
+                    model: "text-embedding-ada-002",
+                });
                 SupabaseVectorStore.fromDocuments(chunkedDocs, embeddings, config_1.dbConfig);
                 return [2 /*return*/];
         }
