@@ -6,7 +6,6 @@ const { SupabaseVectorStore } = require("langchain/vectorstores/supabase");
 import { loadEnvConfig } from "@next/env";
 loadEnvConfig("");
 
-import * as fs from "fs";
 import { dbConfig } from "../config";
 const privateKey = process.env.SUPABASE_PRIVATE_KEY;
 if (!privateKey) throw new Error(`Expected env var SUPABASE_PRIVATE_KEY`);
@@ -41,13 +40,15 @@ if (!url) throw new Error(`Expected env var SUPABASE_URL`);
   //   fs.writeFileSync("scripts/chunk.json", JSON.stringify(docs));
 
   const textSplitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 1000,
+    chunkSize: 4000,
     chunkOverlap: 200,
   });
 
   const chunkedDocs = await textSplitter.splitDocuments(docs);
 
-  const embeddings = new OpenAIEmbeddings();
+  const embeddings = new OpenAIEmbeddings({
+    model: "text-embedding-ada-002",
+  });
 
   SupabaseVectorStore.fromDocuments(chunkedDocs, embeddings, dbConfig);
 })();
