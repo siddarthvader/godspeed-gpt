@@ -12,7 +12,7 @@ export async function POST(req: Request): Promise<Response> {
     history: [];
   };
 
-  //   console.log(history);
+  // console.log(history);
 
   if (!query) {
     return new Response("Query not found", { status: 500 });
@@ -34,7 +34,10 @@ export async function POST(req: Request): Promise<Response> {
     // Sending only last 10 answers as history.
     const response = await chain.call({
       question: sanitizedQuestion,
-      chat_history: history.slice(0, 10) || [],
+      chat_history:
+        history.length > 3
+          ? history.slice(history.length - 3, history.length) || []
+          : history || [],
     });
     //Ask a question using chat history
 

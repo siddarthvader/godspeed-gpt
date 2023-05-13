@@ -56,12 +56,6 @@ const getPage = async (url: string): Promise<GodspeedDoc[]> => {
   //   $(this).before(" ");
   //   $(this).after(" ");
 
-  // if ($(this).is("code")) {
-  //   // Add CODE text to code element;s start and finish
-  //   $(this).before("CODE ``` ");
-  //   $(this).after(" ``` CODE");
-  // }
-
   // if ($(this).not("h1 a, h2 a, h3 a").is("a")) {
   //   $(this).before("LINK-> ");
   //   // console.log($(this).attr("href"));
@@ -103,9 +97,7 @@ const getPage = async (url: string): Promise<GodspeedDoc[]> => {
 
     // Add title, content, and URL to data array
     data.push({
-      title: (docTitle.trim() + " " + sectionTitle.trim() + " " + title.trim())
-        .trim()
-        .replace(/:/g, ""),
+      title: docTitle.trim() + ". " + sectionTitle.trim() + ". " + title.trim(),
       content,
       url: url!,
       date: new Date().toISOString(),
@@ -117,6 +109,12 @@ const getPage = async (url: string): Promise<GodspeedDoc[]> => {
 
   return data;
 };
+
+const cleanText = (text: string) =>
+  text
+    .replace(/\s+/g, " ")
+    .replace(/\.{2,}/g, ".")
+    .trim();
 
 (async () => {
   const sitemap: SiteMap[] = await getSitemap();
@@ -134,13 +132,10 @@ const getPage = async (url: string): Promise<GodspeedDoc[]> => {
     // console.log(doc);
     return {
       url: doc.url,
-      content: (
-        " Title: " +
-        doc.title.trim() +
-        ". Content: " +
-        doc.content.trim()
-      ).trim(),
-      title: doc.title.trim(),
+      content: cleanText(
+        " CONTAINER: TITLE: " + doc.title + ". CONTENT: " + doc.content
+      ),
+      title: cleanText(doc.title),
       tokens: encode(doc.content).length,
       length: doc.content.length,
     };

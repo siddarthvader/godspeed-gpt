@@ -114,9 +114,7 @@ var getPage = function (url) { return __awaiter(void 0, void 0, void 0, function
                     var content = contentEl.text().trim();
                     // Add title, content, and URL to data array
                     data.push({
-                        title: (docTitle.trim() + " " + sectionTitle.trim() + " " + title.trim())
-                            .trim()
-                            .replace(/:/g, ""),
+                        title: docTitle.trim() + ". " + sectionTitle.trim() + ". " + title.trim(),
                         content: content,
                         url: url,
                         date: new Date().toISOString(),
@@ -129,6 +127,12 @@ var getPage = function (url) { return __awaiter(void 0, void 0, void 0, function
         }
     });
 }); };
+var cleanText = function (text) {
+    return text
+        .replace(/\s+/g, " ")
+        .replace(/\.{2,}/g, ".")
+        .trim();
+};
 (function () { return __awaiter(void 0, void 0, void 0, function () {
     var sitemap, docs, i, doc, flatDoc;
     return __generator(this, function (_a) {
@@ -154,11 +158,8 @@ var getPage = function (url) { return __awaiter(void 0, void 0, void 0, function
                     // console.log(doc);
                     return {
                         url: doc.url,
-                        content: (" Title: " +
-                            doc.title.trim() +
-                            ". Content: " +
-                            doc.content.trim()).trim(),
-                        title: doc.title.trim(),
+                        content: cleanText(" CONTAINER: TITLE: " + doc.title + ". CONTENT: " + doc.content),
+                        title: cleanText(doc.title),
                         tokens: (0, gpt_3_encoder_1.encode)(doc.content).length,
                         length: doc.content.length,
                     };
