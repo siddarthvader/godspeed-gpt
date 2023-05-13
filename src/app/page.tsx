@@ -4,8 +4,10 @@ import { useEffect, useRef, useState } from "react";
 
 import Image from "next/image";
 import { Message } from "../../types";
+import ReactMarkdown from "react-markdown";
 
 const codeRegex = /```([\s\S]+?)```/g;
+const preRegex = /<pre\b[^>]*>(.*?)<\/pre>/g;
 export default function Home() {
   const [query, setQuery] = useState("");
 
@@ -74,6 +76,7 @@ export default function Home() {
     }));
 
     try {
+      console.log(history);
       const response = await fetch("/api/langchain-chat", {
         method: "POST",
         headers: {
@@ -96,13 +99,13 @@ export default function Home() {
         let match;
         let codeMatches = [];
         let answerVal = data.text;
-        while ((match = codeRegex.exec(data.text))) {
-          codeMatches.push(match[1].trim());
-          answerVal = answerVal.replace(
-            match[0],
-            generateCodeBlock(match[1].trim())
-          );
-        }
+        // while ((match = preRegex.exec(data.text))) {
+        //   codeMatches.push(match[1].trim());
+        //   answerVal = answerVal.replace(
+        //     match[0],
+        //     generateCodeBlock(match[1].trim())
+        //   );
+        // }
         setMessageState((state) => ({
           ...state,
           messages: [
@@ -121,7 +124,9 @@ export default function Home() {
       messageListRef.current?.scrollTo(0, messageListRef.current.scrollHeight);
     } catch (error) {
       setLoading(false);
-      setError("An error occurred while fetching the data. Please try again.");
+      setError(
+        "An error occuremerald while fetching the data. Please try again."
+      );
       console.log("error", error);
     }
 
@@ -174,7 +179,7 @@ export default function Home() {
   return (
     <div className="flex flex-col items-center justify-start h-full p-4 ">
       <div className="text-2xl font-semibold">Godspeed GPT</div>
-      <hr className="w-full h-0.5 my-4 border-t-0 opacity-100 bg-red-400" />
+      <hr className="w-full h-0.5 my-4 border-t-0 opacity-100 bg-emerald-700" />
 
       <div className="flex-1 w-[80%] h-full overflow-auto" ref={messageListRef}>
         {messages?.map((message, index) => (
@@ -202,20 +207,21 @@ export default function Home() {
                     priority
                   />
                 )}
-                <pre
-                  key={"pre_" + index}
+
+                <ReactMarkdown
                   className={
-                    "ml-2 font-sans text-sm whitespace-break-spaces " +
+                    "message_markdown ml-2 font-sans text-sm whitespace-break-spaces leading-[200%]" +
                     (message.type !== "apiMessage"
-                      ? "text-black"
-                      : "text-zinc-700")
+                      ? " text-zinc-900 font-bold "
+                      : " text-black ")
                   }
-                  dangerouslySetInnerHTML={getAnswer(message.message)}
-                ></pre>
+                >
+                  {message.message}
+                </ReactMarkdown>
               </div>
 
               <div className="flex flex-col">
-                <div className="mt-4 font-semibold text-red-600 ml-[20px] underline">
+                <div className="mt-4 font-semibold text-emerald-700 ml-[20px] underline">
                   {message?.sourceDocs ? " Verified Sources" : ""}
                 </div>
                 <div className="flex space-x-2">
@@ -223,7 +229,7 @@ export default function Home() {
                     <a
                       target="_blank"
                       key={"sourcedacs_" + dindex}
-                      className="ml-2 text-zinc-600 hover:text-red-600 hover:underline no-underline max-w-[200px] border-[1px] underline-no border-transparent hover:border-red-600 p-2 overflow-hidden truncate rounded-xl shadow-sm"
+                      className="ml-2 text-zinc-600 hover:text-emerald-700 hover:underline no-underline max-w-[200px] border-[1px] underline-no border-transparent hover:border-emerald-700 p-2 overflow-hidden truncate rounded-xl shadow-sm"
                       href={doc.metadata.source}
                     >
                       {dindex + 1}. {doc.metadata.source}
@@ -234,7 +240,7 @@ export default function Home() {
             </div>
             <hr
               key={"divider_" + index}
-              className="w-full h-[0.25px] my-1 border-t-0 opacity-100 bg-red-300"
+              className="w-full h-[0.25px] my-1 border-t-0 opacity-100 bg-stone-300"
             />
           </div>
         ))}
@@ -242,7 +248,7 @@ export default function Home() {
       <div className="flex items-center space-x-2 w-[80%]">
         <input
           ref={textAreaRef}
-          className="p-2 mt-4 outline-none w-[90%] focus:border-red-500 border-2 border-zinc-300"
+          className="p-2 mt-4 outline-none w-[90%] focus:border-emerald-700 border-2 border-zinc-300"
           type="text"
           placeholder="Ask a question about Godspeed"
           value={query}
@@ -253,12 +259,12 @@ export default function Home() {
           <button
             disabled
             type="button"
-            className="inline-flex items-center p-2 mt-4 text-sm font-medium text-red-500 bg-white border border-gray-200 rounded-lg"
+            className="inline-flex items-center p-2 mt-4 text-sm font-medium bg-white border border-gray-200 rounded-lg text-emerald-700"
           >
             <svg
               aria-hidden="true"
               role="status"
-              className="inline w-4 h-4 mr-3 text-red-200 animate-spin"
+              className="inline w-4 h-4 mr-3 text-emerald-200 animate-spin"
               viewBox="0 0 100 101"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -276,7 +282,7 @@ export default function Home() {
           </button>
         ) : (
           <button
-            className="p-2 mt-4 text-white bg-red-400 rounded-md disabled:bg-slate-300"
+            className="p-2 mt-4 text-white rounded-md bg-emerald-700 disabled:bg-slate-300"
             onClick={handleAnswer}
             disabled={busy}
           >
@@ -285,8 +291,8 @@ export default function Home() {
         )}
       </div>
       {error && (
-        <div className="p-4 border border-red-400 rounded-md">
-          <p className="text-red-500">{error}</p>
+        <div className="p-4 border rounded-md border-emerald-700">
+          <p className="text-emerald-700">{error}</p>
         </div>
       )}
     </div>
