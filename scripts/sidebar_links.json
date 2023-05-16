@@ -1,0 +1,98 @@
+[
+  {
+    "url": "https://docs.godspeed.systems/docs/table-of-contents",
+    "text": "Table of Contents"
+  },
+  {
+    "url": "https://docs.godspeed.systems/docs/preface",
+    "text": "1. Preface"
+  },
+  {
+    "url": "https://docs.godspeed.systems/docs/microservices/intro",
+    "text": "2. Introduction"
+  },
+  {
+    "url": "https://docs.godspeed.systems/docs/microservices/setup/getting-started",
+    "text": "3. Setup"
+  },
+  {
+    "url": "https://docs.godspeed.systems/docs/microservices/introduction-cli",
+    "text": "4. CLI"
+  },
+  {
+    "url": "https://docs.godspeed.systems/docs/microservices/swagger-specs",
+    "text": "5. Swagger Specs"
+  },
+  {
+    "url": "https://docs.godspeed.systems/docs/microservices/events",
+    "text": "6. Events"
+  },
+  {
+    "url": "https://docs.godspeed.systems/docs/microservices/workflows",
+    "text": "7. Workflows"
+  },
+  {
+    "url": "https://docs.godspeed.systems/docs/microservices/datasources/intro",
+    "text": "8. Datasources"
+  },
+  {
+    "url": "https://docs.godspeed.systems/docs/microservices/datasources/intro",
+    "text": "8.1 Introduction"
+  },
+  {
+    "url": "https://docs.godspeed.systems/docs/microservices/datasources/api",
+    "text": "8.2 API datasource"
+  },
+  {
+    "url": "https://docs.godspeed.systems/docs/microservices/datasources/datastore",
+    "text": "8.3 Datastore as datasource"
+  },
+  {
+    "url": "https://docs.godspeed.systems/docs/microservices/datasources/kafka",
+    "text": "8.4 Kafka as datasource"
+  },
+  {
+    "url": "https://docs.godspeed.systems/docs/microservices/datasources/elasticgraph",
+    "text": "8.5 Elasticgraph as datasource"
+  },
+  {
+    "url": "https://docs.godspeed.systems/docs/microservices/datasources/extensible-datasources",
+    "text": "8.6 Extensible datasources"
+  },
+  {
+    "url": "https://docs.godspeed.systems/docs/microservices/datasources/aws",
+    "text": "8.7 AWS as datasource"
+  },
+  {
+    "url": "https://docs.godspeed.systems/docs/microservices/datasources/redis",
+    "text": "8.8 Redis as datasource"
+  },
+  {
+    "url": "https://docs.godspeed.systems/docs/microservices/caching",
+    "text": "9. Caching"
+  },
+  {
+    "url": "https://docs.godspeed.systems/docs/microservices/mappings",
+    "text": "10. Mappings"
+  },
+  {
+    "url": "https://docs.godspeed.systems/docs/microservices/plugins",
+    "text": "11. Plugins"
+  },
+  {
+    "url": "https://docs.godspeed.systems/docs/microservices/authen-author",
+    "text": "12. Authentication & Authorization"
+  },
+  {
+    "url": "https://docs.godspeed.systems/docs/telemetry/intro",
+    "text": "13. Telemetry"
+  },
+  {
+    "url": "https://docs.godspeed.systems/docs/microservices/custom-middleware",
+    "text": "14. Custom Middleware"
+  },
+  {
+    "url": "https://docs.godspeed.systems/docs/roadmap",
+    "text": "15. Roadmap"
+  }
+]

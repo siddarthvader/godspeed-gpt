@@ -42,7 +42,7 @@ if (!url) throw new Error(`Expected env var SUPABASE_URL`);
 
   const textSplitter = new RecursiveCharacterTextSplitter({
     chunkSize: 2500,
-    chunkOverlap: 200,
+    chunkOverlap: 0,
   });
 
   const chunkedDocs = await textSplitter.splitDocuments(docs);

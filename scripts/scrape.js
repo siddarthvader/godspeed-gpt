@@ -39,31 +39,28 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var axios_1 = require("axios");
 var cheerio = require("cheerio");
 var gpt_3_encoder_1 = require("gpt-3-encoder");
-var util_js_1 = require("./util.js");
 var fs = require("fs");
 var BASE_URL = "https://docs.godspeed.systems/sitemap.xml";
 var CHUNK_SIZE = 200;
-var getSitemap = function () { return __awaiter(void 0, void 0, void 0, function () {
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0: return [4 /*yield*/, axios_1.default
-                    .get(BASE_URL)
-                    .then(function (response) {
-                    // console.log(response);
-                    var sitemapjson = (0, util_js_1.xml2json)(response);
-                    return sitemapjson.urlset.url.map(function (url) {
-                        return {
-                            url: url.loc._text.replace("https://your-docusaurus-test-site.com", "https://docs.godspeed.systems"),
-                        };
-                    });
-                })
-                    .catch(function (error) {
-                    console.log(error);
-                })];
-            case 1: return [2 /*return*/, _a.sent()];
-        }
-    });
-}); };
+// const getSitemap = async () => {
+//   return await axios
+//     .get(BASE_URL)
+//     .then(function (response) {
+//       // console.log(response);
+//       const sitemapjson = xml2json(response);
+//       return sitemapjson.urlset.url.map((url) => {
+//         return {
+//           url: url.loc._text.replace(
+//             "https://your-docusaurus-test-site.com",
+//             "https://docs.godspeed.systems"
+//           ),
+//         };
+//       });
+//     })
+//     .catch(function (error) {
+//       console.log(error);
+//     });
+// };
 var getPage = function (url) { return __awaiter(void 0, void 0, void 0, function () {
     function traverseChildren($element) {
         $element.contents().each(function () {
@@ -137,28 +134,28 @@ var cleanText = function (text) {
     var sitemap, docs, i, doc, flatDoc;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, getSitemap()];
-            case 1:
-                sitemap = _a.sent();
+            case 0:
+                sitemap = JSON.parse(fs.readFileSync("scripts/sidebar_links.json", "utf8"));
+                console.log("sitemap", sitemap.length);
                 docs = [];
                 i = 0;
-                _a.label = 2;
-            case 2:
-                if (!(i < sitemap.length)) return [3 /*break*/, 5];
+                _a.label = 1;
+            case 1:
+                if (!(i < sitemap.length)) return [3 /*break*/, 4];
                 return [4 /*yield*/, getPage(sitemap[i].url)];
-            case 3:
+            case 2:
                 doc = _a.sent();
                 docs.push(doc);
-                _a.label = 4;
-            case 4:
+                _a.label = 3;
+            case 3:
                 i++;
-                return [3 /*break*/, 2];
-            case 5:
+                return [3 /*break*/, 1];
+            case 4:
                 flatDoc = docs.flat().map(function (doc) {
                     // console.log(doc);
                     return {
                         url: doc.url,
-                        content: cleanText(" CONTAINER: TITLE: " + doc.title + ". CONTENT: " + doc.content),
+                        content: cleanText(doc.title + " " + doc.content),
                         title: cleanText(doc.title),
                         tokens: (0, gpt_3_encoder_1.encode)(doc.content).length,
                         length: doc.content.length,
