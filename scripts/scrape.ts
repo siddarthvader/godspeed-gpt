@@ -8,25 +8,25 @@ import * as fs from "fs";
 const BASE_URL = "https://docs.godspeed.systems/sitemap.xml";
 const CHUNK_SIZE = 200;
 
-const getSitemap = async () => {
-  return await axios
-    .get(BASE_URL)
-    .then(function (response) {
-      // console.log(response);
-      const sitemapjson = xml2json(response);
-      return sitemapjson.urlset.url.map((url) => {
-        return {
-          url: url.loc._text.replace(
-            "https://your-docusaurus-test-site.com",
-            "https://docs.godspeed.systems"
-          ),
-        };
-      });
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
-};
+// const getSitemap = async () => {
+//   return await axios
+//     .get(BASE_URL)
+//     .then(function (response) {
+//       // console.log(response);
+//       const sitemapjson = xml2json(response);
+//       return sitemapjson.urlset.url.map((url) => {
+//         return {
+//           url: url.loc._text.replace(
+//             "https://your-docusaurus-test-site.com",
+//             "https://docs.godspeed.systems"
+//           ),
+//         };
+//       });
+//     })
+//     .catch(function (error) {
+//       console.log(error);
+//     });
+// };
 
 const getPage = async (url: string): Promise<GodspeedDoc[]> => {
   const html = await axios.get(url);
@@ -51,22 +51,6 @@ const getPage = async (url: string): Promise<GodspeedDoc[]> => {
   }
 
   traverseChildren($("article"));
-
-  // $("article").each(function () {
-  //   $(this).before(" ");
-  //   $(this).after(" ");
-
-  // if ($(this).not("h1 a, h2 a, h3 a").is("a")) {
-  //   $(this).before("LINK-> ");
-  //   // console.log($(this).attr("href"));
-  //   $(this).after(" " + $(this).attr("href")!, " <-LINK");
-  // }
-
-  // if ($(this).is("img")) {
-  //   $(this).before("IMAGE-> ");
-  //   $(this).after($(this).attr("src")!, " <-IMAGE");
-  // }
-  // });
 
   const pageUrl = url;
   const docTitle = $("h1").text();
@@ -117,7 +101,13 @@ const cleanText = (text: string) =>
     .trim();
 
 (async () => {
-  const sitemap: SiteMap[] = await getSitemap();
+  // const sitemap: SiteMap[] = await getSitemap();
+
+  const sitemap: SiteMap[] = JSON.parse(
+    fs.readFileSync("scripts/sidebar_links.json", "utf8")
+  );
+
+  console.log("sitemap", sitemap.length);
 
   // console.log("sitemap", sitemap);
   let docs = [];
@@ -132,9 +122,7 @@ const cleanText = (text: string) =>
     // console.log(doc);
     return {
       url: doc.url,
-      content: cleanText(
-        " CONTAINER: TITLE: " + doc.title + ". CONTENT: " + doc.content
-      ),
+      content: cleanText(doc.title + " " + doc.content),
       title: cleanText(doc.title),
       tokens: encode(doc.content).length,
       length: doc.content.length,

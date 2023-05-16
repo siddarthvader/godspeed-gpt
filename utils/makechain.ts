@@ -1,10 +1,15 @@
 import { OpenAI } from "langchain/llms/openai";
 import { ConversationalRetrievalQAChain } from "langchain/chains";
 import { SupabaseVectorStore } from "langchain/vectorstores/supabase";
+import { SupabaseHybridSearch } from "langchain/retrievers/supabase";
 
 // const { PromptTemplate } = require("langchain/prompts");
 
-export const makeChain = (vectorstore: SupabaseVectorStore) => {
+export const makeChain = (
+  vectorstore: SupabaseVectorStore,
+  retriever: SupabaseHybridSearch
+) => {
+  console.log("retriever");
   const model = new OpenAI({
     temperature: 0.7,
     modelName: "text-davinci-003",
@@ -23,7 +28,7 @@ export const makeChain = (vectorstore: SupabaseVectorStore) => {
   Never make up an answer or code. 
   User is a software engineer who is trying to learn Godspeed Framework.
   
-  Respond "I dont know" or "Not enough information in context" if not sure about the answer.
+  Respond "I dont know" or "Not enough information in context" if not sure about the answer, do not hellucinate.
   
 
   Context: {context}
@@ -45,11 +50,12 @@ export const makeChain = (vectorstore: SupabaseVectorStore) => {
 
   const chain = ConversationalRetrievalQAChain.fromLLM(
     model,
-    vectorstore.asRetriever(4),
+    vectorstore.asRetriever(),
     {
       returnSourceDocuments: true,
       questionGeneratorTemplate: question_generator_template,
       qaTemplate: qa_template,
+      verbose: true,
     }
   );
 

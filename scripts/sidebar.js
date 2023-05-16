@@ -36,55 +36,38 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var JSONLoader = require("langchain/document_loaders/fs/json").JSONLoader;
-var OpenAIEmbeddings = require("langchain/embeddings").OpenAIEmbeddings;
-var RecursiveCharacterTextSplitter = require("langchain/text_splitter").RecursiveCharacterTextSplitter;
-var SupabaseVectorStore = require("langchain/vectorstores/supabase").SupabaseVectorStore;
-var env_1 = require("@next/env");
-(0, env_1.loadEnvConfig)("");
-var config_1 = require("../config");
-var privateKey = process.env.SUPABASE_PRIVATE_KEY;
-if (!privateKey)
-    throw new Error("Expected env var SUPABASE_PRIVATE_KEY");
-var url = process.env.SUPABASE_URL;
-// console.log(url);
-if (!url)
-    throw new Error("Expected env var SUPABASE_URL");
+var axios_1 = require("axios");
+var cheerio = require("cheerio");
+var fs = require("fs");
+var BASE_URL = "https://docs.godspeed.systems";
 (function () { return __awaiter(void 0, void 0, void 0, function () {
-    var loaderContent, laoderURL, loaderTitle, docs, url, title, textSplitter, chunkedDocs, embeddings;
+    var url;
     return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                loaderContent = new JSONLoader("scripts/gs.json", ["/content"]);
-                laoderURL = new JSONLoader("scripts/gs.json", ["/url"]);
-                loaderTitle = new JSONLoader("scripts/gs.json", ["/title"]);
-                return [4 /*yield*/, loaderContent.load()];
-            case 1:
-                docs = _a.sent();
-                return [4 /*yield*/, laoderURL.load()];
-            case 2:
-                url = _a.sent();
-                return [4 /*yield*/, loaderTitle.load()];
-            case 3:
-                title = _a.sent();
-                docs.map(function (doc, index) {
-                    doc.metadata.source = url[index].pageContent;
-                    doc.metadata.title = title[index].pageContent;
-                    return doc;
-                });
-                console.log(docs);
-                textSplitter = new RecursiveCharacterTextSplitter({
-                    chunkSize: 2500,
-                    chunkOverlap: 0,
-                });
-                return [4 /*yield*/, textSplitter.splitDocuments(docs)];
-            case 4:
-                chunkedDocs = _a.sent();
-                embeddings = new OpenAIEmbeddings({
-                    model: "text-embedding-ada-002",
-                });
-                SupabaseVectorStore.fromDocuments(chunkedDocs, embeddings, config_1.dbConfig);
-                return [2 /*return*/];
-        }
+        url = "https://docs.godspeed.systems/docs/microservices/datasources/redis";
+        axios_1.default
+            .get(url)
+            .then(function (response) {
+            // HTML content of the page
+            var pageHTML = response.data;
+            // Load HTML content with Cheerio
+            var $ = cheerio.load(pageHTML);
+            // Select all link elements within the sidebar
+            var links = $(".sidebar_njMd a.menu__link");
+            // Extract link URLs and text
+            var linkData = links
+                .map(function (index, element) { return ({
+                url: BASE_URL + $(element).attr("href"),
+                text: $(element).text(),
+            }); })
+                .get();
+            // Save link data as JSON
+            var jsonContent = JSON.stringify(linkData, null, 2);
+            fs.writeFileSync("sidebar_links.json", jsonContent);
+            console.log("Links extracted and saved as sidebar_links.json");
+        })
+            .catch(function (error) {
+            console.error("Error fetching the page:", error);
+        });
+        return [2 /*return*/];
     });
 }); })();
