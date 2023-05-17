@@ -40,6 +40,7 @@ var JSONLoader = require("langchain/document_loaders/fs/json").JSONLoader;
 var OpenAIEmbeddings = require("langchain/embeddings").OpenAIEmbeddings;
 var RecursiveCharacterTextSplitter = require("langchain/text_splitter").RecursiveCharacterTextSplitter;
 var SupabaseVectorStore = require("langchain/vectorstores/supabase").SupabaseVectorStore;
+var MarkdownTextSplitter = require("langchain/text_splitter").MarkdownTextSplitter;
 var env_1 = require("@next/env");
 (0, env_1.loadEnvConfig)("");
 var config_1 = require("../config");
@@ -74,8 +75,8 @@ if (!url)
                 });
                 console.log(docs);
                 textSplitter = new RecursiveCharacterTextSplitter({
-                    chunkSize: 2500,
-                    chunkOverlap: 0,
+                    chunkSize: 1500,
+                    chunkOverlap: 500,
                 });
                 return [4 /*yield*/, textSplitter.splitDocuments(docs)];
             case 4:

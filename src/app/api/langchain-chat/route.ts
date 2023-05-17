@@ -31,7 +31,6 @@ export async function POST(req: Request): Promise<Response> {
 
     const retriever = new SupabaseHybridSearch(embeddings, {
       client: supabase_client,
-      //  Below are the defaults, expecting that you set up your supabase table and functions according to the guide above. Please change if necessary.
       similarityK: 2,
       keywordK: 2,
       tableName: "documents",

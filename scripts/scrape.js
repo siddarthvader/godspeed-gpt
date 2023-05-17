@@ -36,141 +36,86 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var axios_1 = require("axios");
-var cheerio = require("cheerio");
-var gpt_3_encoder_1 = require("gpt-3-encoder");
+var text_splitter_1 = require("langchain/text_splitter");
+var config_1 = require("../config");
+var env_1 = require("@next/env");
 var fs = require("fs");
-var BASE_URL = "https://docs.godspeed.systems/sitemap.xml";
-var CHUNK_SIZE = 200;
-// const getSitemap = async () => {
-//   return await axios
-//     .get(BASE_URL)
-//     .then(function (response) {
-//       // console.log(response);
-//       const sitemapjson = xml2json(response);
-//       return sitemapjson.urlset.url.map((url) => {
-//         return {
-//           url: url.loc._text.replace(
-//             "https://your-docusaurus-test-site.com",
-//             "https://docs.godspeed.systems"
-//           ),
-//         };
-//       });
-//     })
-//     .catch(function (error) {
-//       console.log(error);
-//     });
-// };
-var getPage = function (url) { return __awaiter(void 0, void 0, void 0, function () {
-    function traverseChildren($element) {
-        $element.contents().each(function () {
-            if (this.nodeType === 3) {
-                // check if node is a text node
-                $(this).after(" ");
-                $(this).before(" "); // add a space after text node
-            }
-            else if (this.nodeType === 1) {
-                // check if node is an element node
-                traverseChildren($(this)); // recursively call the function on child elements
-                $(this).after(" ");
-                $(this).before(" ");
-                // add a space after current element
-            }
-        });
-    }
-    var html, $, data, pageUrl, docTitle;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0: return [4 /*yield*/, axios_1.default.get(url)];
-            case 1:
-                html = _a.sent();
-                $ = cheerio.load(html.data);
-                data = [];
-                traverseChildren($("article"));
-                pageUrl = url;
-                docTitle = $("h1").text();
-                // Traverse all h2 and h3 elements
-                $("h1, h2, h3").each(function (i, el) {
-                    var _a;
-                    // Get title text and URL from child a element
-                    var title = $(el).text().trim();
-                    var sectionTitle = "";
-                    if (el.name === "h3") {
-                        // console.log($(el).prevUntil("h2").filter("h2").text());
-                        sectionTitle = $(el).prevAll("h2").first().text();
-                        // console.log({ sectionTitle });
-                    }
-                    // console.log({ sectionTitle });
-                    var url = pageUrl;
-                    if (el.name != "h1") {
-                        url += (_a = $(el).find("a").attr("href")) !== null && _a !== void 0 ? _a : "";
-                    }
-                    // console.log({ url });
-                    // Get content from next element that's not an h1, h2, or h3
-                    var contentEl = $(el).nextUntil("h1, h2, h3").filter(":not(h1, h2, h3)");
-                    var content = contentEl.text().trim();
-                    // Add title, content, and URL to data array
-                    data.push({
-                        title: docTitle.trim() + ". " + sectionTitle.trim() + ". " + title.trim(),
-                        content: content,
-                        url: url,
-                        date: new Date().toISOString(),
-                        tokens: (0, gpt_3_encoder_1.encode)(content).length,
-                        length: content.length,
-                        chunks: [],
-                    });
-                });
-                return [2 /*return*/, data];
-        }
-    });
-}); };
-var cleanText = function (text) {
-    return text
-        .replace(/\s+/g, " ")
-        .replace(/\.{2,}/g, ".")
-        .trim();
-};
-(function () { return __awaiter(void 0, void 0, void 0, function () {
-    var sitemap, docs, i, doc, flatDoc;
+var sidebars = require("./gs_doc-main/sidebars.js");
+var OpenAIEmbeddings = require("langchain/embeddings").OpenAIEmbeddings;
+var SupabaseVectorStore = require("langchain/vectorstores/supabase").SupabaseVectorStore;
+(0, env_1.loadEnvConfig)("");
+var privateKey = process.env.SUPABASE_PRIVATE_KEY;
+if (!privateKey)
+    throw new Error("Expected env var SUPABASE_PRIVATE_KEY");
+var url = process.env.SUPABASE_URL;
+if (!url)
+    throw new Error("Expected env var SUPABASE_URL");
+var CHUNK_SIZE = 1500;
+var CHUNK_OVERLAP = 500;
+var BASE_URL = "scripts/gs_doc-main/docs/";
+var POSTFIX = ".md";
+var DOC_URL = "https://docs.godspeed.systems/docs/";
+var getPage = function (base_url, url, postfix, doc_url) { return __awaiter(void 0, void 0, void 0, function () {
+    var html, splitter, output;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                sitemap = JSON.parse(fs.readFileSync("scripts/sidebar_links.json", "utf8"));
-                console.log("sitemap", sitemap.length);
+                html = fs.readFileSync(base_url + url + postfix, "utf8");
+                console.log(html);
+                splitter = new text_splitter_1.MarkdownTextSplitter({
+                    chunkSize: CHUNK_SIZE,
+                    chunkOverlap: CHUNK_OVERLAP,
+                });
+                return [4 /*yield*/, splitter.createDocuments([html], [
+                        {
+                            source: doc_url + url,
+                        },
+                    ])];
+            case 1:
+                output = _a.sent();
+                // console.log(output);
+                return [2 /*return*/, output];
+        }
+    });
+}); };
+var getSitemap = function (list) {
+    // console.log(list);
+    return list.reduce(function (sitemap, item, index) {
+        var _a, _b;
+        if (!((_a = item === null || item === void 0 ? void 0 : item.items) === null || _a === void 0 ? void 0 : _a.length)) {
+            sitemap.push((_b = item.id) !== null && _b !== void 0 ? _b : item);
+        }
+        else {
+            sitemap.push(getSitemap(item.items));
+        }
+        return sitemap;
+    }, []);
+};
+(function () { return __awaiter(void 0, void 0, void 0, function () {
+    var sitemap, docs, i, doc, embeddings;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                sitemap = getSitemap(sidebars.tutorialSidebar).flat().flat();
                 docs = [];
                 i = 0;
                 _a.label = 1;
             case 1:
                 if (!(i < sitemap.length)) return [3 /*break*/, 4];
-                return [4 /*yield*/, getPage(sitemap[i].url)];
+                return [4 /*yield*/, getPage(BASE_URL, sitemap[i], POSTFIX, DOC_URL)];
             case 2:
                 doc = _a.sent();
+                // console.log(doc);
                 docs.push(doc);
                 _a.label = 3;
             case 3:
                 i++;
                 return [3 /*break*/, 1];
             case 4:
-                flatDoc = docs.flat().map(function (doc) {
-                    // console.log(doc);
-                    return {
-                        url: doc.url,
-                        content: cleanText(doc.title + " " + doc.content),
-                        title: cleanText(doc.title),
-                        tokens: (0, gpt_3_encoder_1.encode)(doc.content).length,
-                        length: doc.content.length,
-                    };
+                embeddings = new OpenAIEmbeddings({
+                    model: "text-embedding-ada-002",
                 });
-                console.log(flatDoc);
-                // const json: GodspeedJSON = {
-                //   current_date: new Date().toISOString(),
-                //   author: "sid",
-                //   url: "https://docs.godspeed.systems/sitemap.xml",
-                //   tokens: flatDoc.reduce((acc, doc) => acc + doc.tokens, 0),
-                //   length: flatDoc.reduce((acc, doc) => acc + doc.length, 0),
-                //   docs: flatDoc,
-                // };
-                fs.writeFileSync("scripts/gs.json", JSON.stringify(flatDoc));
+                SupabaseVectorStore.fromDocuments(docs.flat(), embeddings, config_1.dbConfig);
                 return [2 /*return*/];
         }
     });

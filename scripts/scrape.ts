@@ -1,144 +1,80 @@
-import axios from "axios";
-import * as cheerio from "cheerio";
-import { encode } from "gpt-3-encoder";
-import { xml2json } from "./util.js";
-import { GodspeedDoc, GodspeedJSON, SiteMap } from "../types/index.jsx";
+import { MarkdownTextSplitter } from "langchain/text_splitter";
+import { dbConfig } from "../config";
+import { loadEnvConfig } from "@next/env";
 import * as fs from "fs";
+const sidebars = require("./gs_doc-main/sidebars.js");
+const { OpenAIEmbeddings } = require("langchain/embeddings");
+const { SupabaseVectorStore } = require("langchain/vectorstores/supabase");
 
-const BASE_URL = "https://docs.godspeed.systems/sitemap.xml";
-const CHUNK_SIZE = 200;
+loadEnvConfig("");
 
-// const getSitemap = async () => {
-//   return await axios
-//     .get(BASE_URL)
-//     .then(function (response) {
-//       // console.log(response);
-//       const sitemapjson = xml2json(response);
-//       return sitemapjson.urlset.url.map((url) => {
-//         return {
-//           url: url.loc._text.replace(
-//             "https://your-docusaurus-test-site.com",
-//             "https://docs.godspeed.systems"
-//           ),
-//         };
-//       });
-//     })
-//     .catch(function (error) {
-//       console.log(error);
-//     });
-// };
+const privateKey = process.env.SUPABASE_PRIVATE_KEY;
+if (!privateKey) throw new Error(`Expected env var SUPABASE_PRIVATE_KEY`);
 
-const getPage = async (url: string): Promise<GodspeedDoc[]> => {
-  const html = await axios.get(url);
-  const $ = cheerio.load(html.data);
-  const data: GodspeedDoc[] = [];
+const url = process.env.SUPABASE_URL;
 
-  function traverseChildren($element) {
-    $element.contents().each(function () {
-      if (this.nodeType === 3) {
-        // check if node is a text node
-        $(this).after(" ");
-        $(this).before(" "); // add a space after text node
-      } else if (this.nodeType === 1) {
-        // check if node is an element node
-        traverseChildren($(this)); // recursively call the function on child elements
-        $(this).after(" ");
-        $(this).before(" ");
+if (!url) throw new Error(`Expected env var SUPABASE_URL`);
 
-        // add a space after current element
-      }
-    });
-  }
+const CHUNK_SIZE = 1500;
+const CHUNK_OVERLAP = 500;
 
-  traverseChildren($("article"));
+const BASE_URL = "scripts/gs_doc-main/docs/";
+const POSTFIX = ".md";
+const DOC_URL = "https://docs.godspeed.systems/docs/";
 
-  const pageUrl = url;
-  const docTitle = $("h1").text();
+const getPage = async (
+  base_url: string,
+  url: string,
+  postfix: string,
+  doc_url: string
+) => {
+  const html = fs.readFileSync(base_url + url + postfix, "utf8");
 
-  // Traverse all h2 and h3 elements
-  $("h1, h2, h3").each((i, el) => {
-    // Get title text and URL from child a element
-    let title = $(el).text().trim();
-    let sectionTitle = "";
-    if (el.name === "h3") {
-      // console.log($(el).prevUntil("h2").filter("h2").text());
-      sectionTitle = $(el).prevAll("h2").first().text();
-      // console.log({ sectionTitle });
-    }
-
-    // console.log({ sectionTitle });
-    let url = pageUrl;
-    if (el.name != "h1") {
-      url += $(el).find("a").attr("href") ?? "";
-    }
-
-    // console.log({ url });
-
-    // Get content from next element that's not an h1, h2, or h3
-    const contentEl = $(el).nextUntil("h1, h2, h3").filter(":not(h1, h2, h3)");
-
-    const content = contentEl.text().trim();
-
-    // Add title, content, and URL to data array
-    data.push({
-      title: docTitle.trim() + ". " + sectionTitle.trim() + ". " + title.trim(),
-      content,
-      url: url!,
-      date: new Date().toISOString(),
-      tokens: encode(content).length,
-      length: content.length,
-      chunks: [],
-    });
+  console.log(html);
+  const splitter = new MarkdownTextSplitter({
+    chunkSize: CHUNK_SIZE,
+    chunkOverlap: CHUNK_OVERLAP,
   });
 
-  return data;
-};
-
-const cleanText = (text: string) =>
-  text
-    .replace(/\s+/g, " ")
-    .replace(/\.{2,}/g, ".")
-    .trim();
-
-(async () => {
-  // const sitemap: SiteMap[] = await getSitemap();
-
-  const sitemap: SiteMap[] = JSON.parse(
-    fs.readFileSync("scripts/sidebar_links.json", "utf8")
+  const output = await splitter.createDocuments(
+    [html],
+    [
+      {
+        source: doc_url + url,
+      },
+    ]
   );
 
-  console.log("sitemap", sitemap.length);
+  // console.log(output);
+  return output;
+};
+const getSitemap = (list: any) => {
+  // console.log(list);
+  return list.reduce((sitemap: any, item: any, index: number) => {
+    if (!item?.items?.length) {
+      sitemap.push(item.id ?? item);
+    } else {
+      sitemap.push(getSitemap(item.items));
+    }
+    return sitemap;
+  }, []);
+};
 
-  // console.log("sitemap", sitemap);
+(async () => {
+  const sitemap: string[] = getSitemap(sidebars.tutorialSidebar).flat().flat();
+
   let docs = [];
 
   for (let i = 0; i < sitemap.length; i++) {
-    const doc = await getPage(sitemap[i].url);
+    const doc = await getPage(BASE_URL, sitemap[i], POSTFIX, DOC_URL);
 
+    // console.log(doc);
     docs.push(doc);
   }
 
-  const flatDoc: GodspeedJSON[] = docs.flat().map((doc) => {
-    // console.log(doc);
-    return {
-      url: doc.url,
-      content: cleanText(doc.title + " " + doc.content),
-      title: cleanText(doc.title),
-      tokens: encode(doc.content).length,
-      length: doc.content.length,
-    };
+  const embeddings = new OpenAIEmbeddings({
+    model: "text-embedding-ada-002",
   });
 
-  console.log(flatDoc);
-
-  // const json: GodspeedJSON = {
-  //   current_date: new Date().toISOString(),
-  //   author: "sid",
-  //   url: "https://docs.godspeed.systems/sitemap.xml",
-  //   tokens: flatDoc.reduce((acc, doc) => acc + doc.tokens, 0),
-  //   length: flatDoc.reduce((acc, doc) => acc + doc.length, 0),
-  //   docs: flatDoc,
-  // };
-
-  fs.writeFileSync("scripts/gs.json", JSON.stringify(flatDoc));
+  SupabaseVectorStore.fromDocuments(docs.flat(), embeddings, dbConfig);
 })();

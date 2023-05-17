@@ -48,16 +48,12 @@ export const makeChain = (
   Follow Up Input: {question}
   Standalone question:`;
 
-  const chain = ConversationalRetrievalQAChain.fromLLM(
-    model,
-    vectorstore.asRetriever(),
-    {
-      returnSourceDocuments: true,
-      questionGeneratorTemplate: question_generator_template,
-      qaTemplate: qa_template,
-      verbose: true,
-    }
-  );
+  const chain = ConversationalRetrievalQAChain.fromLLM(model, retriever, {
+    returnSourceDocuments: true,
+    questionGeneratorTemplate: question_generator_template,
+    qaTemplate: qa_template,
+    verbose: true,
+  });
 
   return chain;
 };

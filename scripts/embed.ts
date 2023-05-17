@@ -72,9 +72,7 @@ const generateEmbedding = async (docs: GodspeedDoc[]) => {
 };
 
 (async () => {
-  const json: GodspeedJSON = JSON.parse(
-    fs.readFileSync("scripts/gs.json", "utf8")
-  );
+  const json = JSON.parse(fs.readFileSync("scripts/gs.json", "utf8"));
 
   await generateEmbedding(json.docs);
 })();
