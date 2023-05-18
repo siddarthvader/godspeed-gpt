@@ -37,7 +37,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var text_splitter_1 = require("langchain/text_splitter");
-var config_1 = require("../config");
 var env_1 = require("@next/env");
 var fs = require("fs");
 var sidebars = require("./gs_doc-main/sidebars.js");
@@ -92,7 +91,7 @@ var getSitemap = function (list) {
     }, []);
 };
 (function () { return __awaiter(void 0, void 0, void 0, function () {
-    var sitemap, docs, i, doc, embeddings;
+    var sitemap, docs, i, doc;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -105,17 +104,14 @@ var getSitemap = function (list) {
                 return [4 /*yield*/, getPage(BASE_URL, sitemap[i], POSTFIX, DOC_URL)];
             case 2:
                 doc = _a.sent();
-                // console.log(doc);
+                // console.log(doc.metadata);
                 docs.push(doc);
                 _a.label = 3;
             case 3:
                 i++;
                 return [3 /*break*/, 1];
             case 4:
-                embeddings = new OpenAIEmbeddings({
-                    model: "text-embedding-ada-002",
-                });
-                SupabaseVectorStore.fromDocuments(docs.flat(), embeddings, config_1.dbConfig);
+                console.log(docs.flat());
                 return [2 /*return*/];
         }
     });

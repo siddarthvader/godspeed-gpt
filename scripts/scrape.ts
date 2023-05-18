@@ -68,13 +68,15 @@ const getSitemap = (list: any) => {
   for (let i = 0; i < sitemap.length; i++) {
     const doc = await getPage(BASE_URL, sitemap[i], POSTFIX, DOC_URL);
 
-    // console.log(doc);
+    // console.log(doc.metadata);
     docs.push(doc);
   }
 
-  const embeddings = new OpenAIEmbeddings({
-    model: "text-embedding-ada-002",
-  });
+  console.log(docs.flat());
 
-  SupabaseVectorStore.fromDocuments(docs.flat(), embeddings, dbConfig);
+  // const embeddings = new OpenAIEmbeddings({
+  //   model: "text-embedding-ada-002",
+  // });
+
+  // SupabaseVectorStore.fromDocuments(docs.flat(), embeddings, dbConfig);
 })();
