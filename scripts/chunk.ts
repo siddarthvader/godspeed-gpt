@@ -2,6 +2,7 @@ const { JSONLoader } = require("langchain/document_loaders/fs/json");
 const { OpenAIEmbeddings } = require("langchain/embeddings");
 const { RecursiveCharacterTextSplitter } = require("langchain/text_splitter");
 const { SupabaseVectorStore } = require("langchain/vectorstores/supabase");
+const { MarkdownTextSplitter } = require("langchain/text_splitter");
 
 import { loadEnvConfig } from "@next/env";
 loadEnvConfig("");
@@ -17,9 +18,9 @@ if (!url) throw new Error(`Expected env var SUPABASE_URL`);
 
 (async () => {
   //   const docs = new JSONLoader("gs.json");
-  const loaderContent = new JSONLoader("scripts/gs.json", ["/content"]);
-  const laoderURL = new JSONLoader("scripts/gs.json", ["/url"]);
-  const loaderTitle = new JSONLoader("scripts/gs.json", ["/title"]);
+  const loaderContent = new JSONLoader("scripts/gs.json", ["/pageContext"]);
+  const laoderURL = new JSONLoader("scripts/gs.json", ["/metadata"]);
+  // const loaderTitle = new JSONLoader("scripts/gs.json", ["/title"]);
 
   //   console.log(docs);
   //   return docs.map((doc) => {
@@ -29,11 +30,10 @@ if (!url) throw new Error(`Expected env var SUPABASE_URL`);
 
   const docs = await loaderContent.load();
   const url = await laoderURL.load();
-  const title = await loaderTitle.load();
+  // const title = await loaderTitle.load();
 
   docs.map((doc, index) => {
-    doc.metadata.source = url[index].pageContent;
-    doc.metadata.title = title[index].pageContent;
+    doc.metadata = url[index].metadata;
 
     return doc;
   });
@@ -41,8 +41,8 @@ if (!url) throw new Error(`Expected env var SUPABASE_URL`);
   //   fs.writeFileSync("scripts/chunk.json", JSON.stringify(docs));
 
   const textSplitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 2500,
-    chunkOverlap: 200,
+    chunkSize: 1500,
+    chunkOverlap: 500,
   });
 
   const chunkedDocs = await textSplitter.splitDocuments(docs);

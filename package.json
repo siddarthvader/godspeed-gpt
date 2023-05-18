@@ -9,7 +9,8 @@
     "lint": "next lint",
     "scrape": "tsc scripts/scrape.ts && node scripts/scrape.js",
     "embed": "tsc scripts/embed.ts && node scripts/embed.js",
-    "embed-langchain": "tsc scripts/chunk.ts && node scripts/chunk.js"
+    "embed-langchain": "tsc scripts/chunk.ts && node scripts/chunk.js",
+    "sidebar-links": "tsc scripts/sidebar.ts && node scripts/sidebar.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.21.0",

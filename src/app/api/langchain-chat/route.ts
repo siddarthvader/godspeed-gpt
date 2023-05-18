@@ -1,8 +1,9 @@
-import { dbConfig } from "../../../../config";
+import { dbConfig, supabase_client } from "../../../../config/index";
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import { loadEnvConfig } from "@next/env";
 import { makeChain } from "../../../../utils/makechain";
 import { SupabaseVectorStore } from "langchain/vectorstores/supabase";
+import { SupabaseHybridSearch } from "langchain/retrievers/supabase";
 
 loadEnvConfig("");
 
@@ -21,14 +22,24 @@ export async function POST(req: Request): Promise<Response> {
   const sanitizedQuestion = query.trim().replaceAll("\n", " ");
 
   try {
+    const embeddings = new OpenAIEmbeddings();
     /* create vectorstore*/
     const vectorStore = await SupabaseVectorStore.fromExistingIndex(
-      new OpenAIEmbeddings(),
+      embeddings,
       dbConfig
     );
 
+    const retriever = new SupabaseHybridSearch(embeddings, {
+      client: supabase_client,
+      similarityK: 2,
+      keywordK: 2,
+      tableName: "documents",
+      similarityQueryName: "match_documents",
+      keywordQueryName: "kw_match_documents",
+    });
+
     //create chain
-    const chain = makeChain(vectorStore);
+    const chain = makeChain(vectorStore, retriever);
 
     //Ask a question using chat history
     // Sending only last 10 answers as history.

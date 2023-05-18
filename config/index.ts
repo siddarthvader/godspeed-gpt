@@ -14,4 +14,4 @@ const dbConfig = {
   queryName: "match_documents",
 };
 
-export { dbConfig };
+export { dbConfig, client as supabase_client };
