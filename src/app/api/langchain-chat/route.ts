@@ -26,6 +26,7 @@ export async function POST(req: Request): Promise<Response> {
     /* create vectorstore*/
     const vectorStore = await SupabaseVectorStore.fromExistingIndex(
       embeddings,
+
       dbConfig
     );
 
