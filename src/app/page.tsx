@@ -5,14 +5,11 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Message } from "../../types";
 import ReactMarkdown from "react-markdown";
-
-const codeRegex = /```([\s\S]+?)```/g;
-const preRegex = /<pre\b[^>]*>(.*?)<\/pre>/g;
+import Loading from "./components/Loading";
 export default function Home() {
   const [query, setQuery] = useState("");
 
   const [loading, setLoading] = useState(false);
-
   const [messageState, setMessageState] = useState<{
     messages: Message[];
     history: [string, string][];
@@ -25,7 +22,6 @@ export default function Home() {
     ],
     history: [],
   });
-
   const { messages, history } = messageState;
 
   const messageListRef = useRef<HTMLDivElement>(null);
@@ -35,9 +31,7 @@ export default function Home() {
 
   const [error, setError] = useState("");
 
-  function copyFunction(copyText: string) {
-    // console.log("called...");
-
+  const copyFunction = (copyText: string) => {
     navigator.clipboard.writeText(copyText).then(
       function () {
         console.log("Async: Copying to clipboard was successful!");
@@ -46,7 +40,7 @@ export default function Home() {
         console.error("Async: Could not copy text: ", err);
       }
     );
-  }
+  };
 
   const handleEnter = (e: any) => {
     if (e.key === "Enter" && query) {
@@ -96,16 +90,8 @@ export default function Home() {
       } else {
         console.log("messageState", messageState);
 
-        let match;
-        let codeMatches = [];
         let answerVal = data.text;
-        // while ((match = preRegex.exec(data.text))) {
-        //   codeMatches.push(match[1].trim());
-        //   answerVal = answerVal.replace(
-        //     match[0],
-        //     generateCodeBlock(match[1].trim())
-        //   );
-        // }
+
         setMessageState((state) => ({
           ...state,
           messages: [
@@ -133,28 +119,10 @@ export default function Home() {
     setBusy(false);
     setLoading(false);
   };
-
-  function getAnswer(message: string) {
-    return {
-      __html: message,
-    };
-  }
-
-  function generateCodeBlock(content: string) {
-    return `<pre class="flex flex-col mt-4 font-sans text-sm leading-none bg-zinc-800">
-        <div 
-          class="copy-code p-2 text-sm font-semibold text-right text-white cursor-pointer bg-zinc-600"
-        >Copy</div>
-        <code class="w-full p-4 overflow-scroll text-white flex-1 leading-2 font-mono">${content}</code>
-      </pre>`;
-  }
-
   useEffect(() => {
     const copyEle = document.getElementsByClassName("copy-code");
 
     if (copyEle) {
-      // copyEle.map((ele) => {
-
       for (let i = 0; i < copyEle.length; i++) {
         const ele = copyEle[i];
         ele.addEventListener("click", () => {
@@ -244,6 +212,7 @@ export default function Home() {
             />
           </div>
         ))}
+        {loading && <Loading />}
       </div>
       <div className="flex items-center space-x-2 w-[80%]">
         <input
