@@ -2,11 +2,24 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+
 import Image from "next/image";
 import { Message } from "../../types";
 import ReactMarkdown from "react-markdown";
-import Loading from "./components/Loading";
+import Loading from "../components/Loading";
+import Header from "@/components/Header";
+import PageLoading from "@/components/PageLoading";
 export default function Home() {
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      return redirect("/login?callbackUrl=/");
+    },
+  });
+
+  console.log({ session });
   const [query, setQuery] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -110,9 +123,7 @@ export default function Home() {
       messageListRef.current?.scrollTo(0, messageListRef.current.scrollHeight);
     } catch (error) {
       setLoading(false);
-      setError(
-        "An error occuremerald while fetching the data. Please try again."
-      );
+      setError("An error occured while fetching the data. Please try again.");
       console.log("error", error);
     }
 
@@ -146,8 +157,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col items-center justify-start h-full p-4 ">
-      <div className="text-2xl font-semibold">Godspeed GPT</div>
-      <hr className="w-full h-0.5 my-4 border-t-0 opacity-100 bg-emerald-700" />
+      <Header />
 
       <div className="flex-1 w-[80%] h-full overflow-auto" ref={messageListRef}>
         {messages?.map((message, index) => (
@@ -189,7 +199,7 @@ export default function Home() {
               </div>
 
               <div className="flex flex-col">
-                <div className="mt-4 font-semibold text-emerald-700 ml-[20px] underline">
+                <div className="mt-4 font-semibold text-orange-600 ml-[20px] underline">
                   {message?.sourceDocs ? " Verified Sources" : ""}
                 </div>
                 <div className="flex space-x-2">
@@ -197,7 +207,7 @@ export default function Home() {
                     <a
                       target="_blank"
                       key={"sourcedacs_" + dindex}
-                      className="ml-2 text-zinc-600 hover:text-emerald-700 hover:underline no-underline max-w-[200px] border-[1px] underline-no border-transparent hover:border-emerald-700 p-2 overflow-hidden truncate rounded-xl shadow-sm"
+                      className="ml-2 text-zinc-600 hover:text-orange-600 hover:underline no-underline max-w-[200px] border-[1px] underline-no border-transparent hover:border-orange-600 p-2 overflow-hidden truncate rounded-xl shadow-sm"
                       href={doc.metadata.source}
                     >
                       {dindex + 1}. {doc.metadata.source}
@@ -217,7 +227,7 @@ export default function Home() {
       <div className="flex items-center space-x-2 w-[80%]">
         <input
           ref={textAreaRef}
-          className="p-2 mt-4 outline-none w-[90%] focus:border-emerald-700 border-2 border-zinc-300"
+          className="p-2 mt-4 outline-none w-[90%] focus:border-orange-600 border-2 border-zinc-300"
           type="text"
           placeholder="Ask a question about Godspeed"
           value={query}
@@ -228,12 +238,12 @@ export default function Home() {
           <button
             disabled
             type="button"
-            className="inline-flex items-center p-2 mt-4 text-sm font-medium bg-white border border-gray-200 rounded-lg text-emerald-700"
+            className="inline-flex items-center p-2 mt-4 text-sm font-medium text-orange-600 bg-white border border-gray-200 rounded-lg"
           >
             <svg
               aria-hidden="true"
               role="status"
-              className="inline w-4 h-4 mr-3 text-emerald-200 animate-spin"
+              className="inline w-4 h-4 mr-3 text-orange-200 animate-spin"
               viewBox="0 0 100 101"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -251,7 +261,7 @@ export default function Home() {
           </button>
         ) : (
           <button
-            className="p-2 mt-4 text-white rounded-md bg-emerald-700 disabled:bg-slate-300"
+            className="p-2 mt-4 text-white bg-orange-600 rounded-md disabled:bg-slate-300"
             onClick={handleAnswer}
             disabled={busy}
           >
@@ -260,8 +270,8 @@ export default function Home() {
         )}
       </div>
       {error && (
-        <div className="p-4 border rounded-md border-emerald-700">
-          <p className="text-emerald-700">{error}</p>
+        <div className="p-4 border border-orange-600 rounded-md">
+          <p className="text-orange-600">{error}</p>
         </div>
       )}
     </div>
