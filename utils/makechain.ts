@@ -32,7 +32,7 @@ export const makeChain = (
   console.log("retriever");
   const model = new OpenAI({
     temperature: 1.0,
-    // modelName: "gpt-3.5-turbo",
+    modelName: "gpt-3.5-turbo",
     maxTokens: 2000,
     openAIApiKey: process.env.OPENAI_API_KEY!,
   });
