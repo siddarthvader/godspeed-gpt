@@ -61,7 +61,7 @@ function Login() {
             width={200}
             height={40}
             className="mr-2"
-            src="/Logo.png"
+            src="/logo.png"
             alt="logo"
           />
           GPT Powered Documentation for Godspeed Framework
