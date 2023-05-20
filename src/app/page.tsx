@@ -2,12 +2,24 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+
 import Image from "next/image";
 import { Message } from "../../types";
 import ReactMarkdown from "react-markdown";
 import Loading from "../components/Loading";
 import Header from "@/components/Header";
+import PageLoading from "@/components/PageLoading";
 export default function Home() {
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      return redirect("/login?callbackUrl=/");
+    },
+  });
+
+  console.log({ session });
   const [query, setQuery] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -146,6 +158,7 @@ export default function Home() {
   return (
     <div className="flex flex-col items-center justify-start h-full p-4 ">
       <Header />
+
       <div className="flex-1 w-[80%] h-full overflow-auto" ref={messageListRef}>
         {messages?.map((message, index) => (
           <div key={"message_container_" + index}>

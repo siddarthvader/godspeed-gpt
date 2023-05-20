@@ -1,3 +1,4 @@
+import Provider from "@/components/Provider";
 import "./globals.css";
 import { Inter } from "next/font/google";
 
@@ -18,7 +19,9 @@ export default function RootLayout({
       <title>Godspeed GPT</title>
       <meta name="description" content="AI documentation of Godspeed" />
       <meta name="viewport" content="width=device-width, initial-scale=1" />
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <Provider>{children}</Provider>
+      </body>
     </html>
   );
 }
